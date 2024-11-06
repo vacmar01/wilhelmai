@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+outlines = "*"
+transformers = "*"
+accelerate = ">=0.26.0"
+instructor = "*"
+anthropic = "*"
+python-dotenv = "*"
+pytest-playwright = "*"
+beautifulsoup4 = "*"
+requests = "*"
+gradio = "*"
+
+[dev-packages]
+ipykernel = "*"
+
+[requires]
+python_version = "3.12"
