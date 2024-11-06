@@ -3,3 +3,7 @@ __pycache__
 .gradio
 .env
 *.db
+.venv/*
+.venv
+*.db*
+logs
