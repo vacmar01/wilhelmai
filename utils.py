@@ -15,6 +15,14 @@ ANTHROPIC_MODEL = "claude-3-5-haiku-latest"
 anthropic = Anthropic()
 client = instructor.from_anthropic(Anthropic())
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    #filename='app.log'  # Remove this line to log to console instead
+)
+
 http_headers = {
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
         'accept-language': 'de-DE,de;q=0.7',
@@ -57,13 +65,12 @@ def get_search_term(query: str) -> SearchTerm:
         response_model=SearchTerm,
     )
     
-    print("SearchTerm for query: ", query, "is: ", resp.text)
+    logging.info(f"SearchTerm for query: '{query}' is: '{resp.text}'")
 
     return resp
 
 def search_radiopaedia(search_query: str):
     url = 'https://radiopaedia.org/search'
-
 
     params = {
         'lang': 'us',
@@ -90,11 +97,11 @@ def format_search_results(results):
     
     res_string = "\n========================\n\n".join([format_single_search_result(result) for result in results])
     
-    print(res_string)
+    logging.info(f"Formatted search results: {res_string}")
     
     return res_string
 
-def get_best_result(query: str, search_results) -> SearchTerm:
+def get_best_result(query: str, search_results) -> BestSearchResult:
 # note that client.chat.completions.create will also work
     resp = client.messages.create(
         model=ANTHROPIC_MODEL,
@@ -111,7 +118,7 @@ def get_best_result(query: str, search_results) -> SearchTerm:
         response_model=BestSearchResult,
     )
 
-    print("BestSearchResult for query: ", query, "is: ", search_results[resp.id])
+    logging.info(f"BestSearchResult for query: '{query}' is: '{resp.chain_of_thought}'")
     
     return resp
 
@@ -135,22 +142,25 @@ def query_for_qa(article_text, query):
 def answer_question(query: str) -> str:
     search_term = get_search_term(query)
     soup = search_radiopaedia(search_term.text)
-    all_search_results = [structure_search_result(search_result, i) for i, search_result in enumerate(soup.find_all(class_='search-result'))]
+    all_search_results = [structure_search_result(search_result, i) for i, search_result in enumerate(soup.find_all(class_='search-result'))][:5]
     r = get_best_result(query, all_search_results)
-    all_search_results[r.id]
-    article_text = get_article_text(f"https://radiopaedia.org{all_search_results[r.id]['href']}")
+    logging.info(f"Best search result id: {r.id}")
+    assert r.id >= 0 and r.id <= 5
 
-    res = anthropic.messages.create(
-            model="claude-3-5-haiku-latest",
-            max_tokens=1024,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"Answer the user query faithfully using the information in the context. If you don't know the answer don't fabricate an answer, just say 'I don't know'. Don't start your answer with 'according to the context' or something similar. Just start with the actual answer.\n\ncontext: {article_text}\n\nquery: {query}",
-                }
-            ]
-        )
+    article_text = get_article_text(f"https://radiopaedia.org{all_search_results[r.id]['href']}")
     
-    print(res)
-    
-    return res.content[0].text, "https://radiopaedia.org" + all_search_results[r.id]['href']
+    with anthropic.messages.stream(
+        model=ANTHROPIC_MODEL,
+        max_tokens=1024,
+        messages=[
+            {
+                "role": "user",
+                "content": f"Answer the user query faithfully using the information in the context. If you don't know the answer don't fabricate an answer, just say 'I don't know'.\n\ncontext: {article_text}\n\nquery: {query}",
+            }
+        ]
+    ) as stream:
+        result = ""
+        for text in stream.text_stream:
+            result = result + text
+            yield result, "https://radiopaedia.org" + all_search_results[r.id]['href']
+

@@ -14,6 +14,7 @@ pytest-playwright = "*"
 beautifulsoup4 = "*"
 requests = "*"
 gradio = "*"
+bm25s = {extras = ["full"], version = "*"}
 
 [dev-packages]
 ipykernel = "*"
