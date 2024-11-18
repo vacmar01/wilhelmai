@@ -17,15 +17,19 @@ demo = gr.Interface(
     fn=answer_question,
     inputs=gr.Textbox(label="Your Query", placeholder="Ask a radiology question here..."),
     outputs=[gr.Textbox(label="Answer", lines=5), gr.Textbox(label="Source", show_copy_button=True)],
+    outputs=[gr.Textbox(label="Answer", lines=5), gr.Textbox(label="Source", show_copy_button=True)],
     examples=[
-        "how to tell if disc infection or just degeneration",
         "pneumonitis",
-        "How do I measure tibial tuberosity-trochlear groove (TT-TG) distance on CT?"
+        "How do I measure tibial tuberosity-trochlear groove (TT-TG) distance on CT?",
+        "McDonald criteria",
+        "tell me something about adem. what are the triggers and how does it look on MRI?"
     ]
 )
 
 
 if __name__ == "__main__":
     initialize_database()
+    demo.launch(root_path="/radioprag")
+
     # demo.queue()
     demo.launch()
