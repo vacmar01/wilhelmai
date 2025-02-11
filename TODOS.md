@@ -1,5 +1,5 @@
-- [ ] Figure out how I can buffer the answer somehow so I can add it to the DB
-- [ ] Download all articles seen in the search results for caching 
-- [ ] Maybe chunk and embed the article on the fly (BM25 doesn't work better than my current retrieval strategy)
-- [ ] Add chat functionality (implementing history)
-- [ ] Let you navigate through your query answer history 
+- caching 
+- Example questions 
+- Multiple chats 
+- Multiturn Chats 
+- refactor to using claudette
