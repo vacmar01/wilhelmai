@@ -1,5 +1,3 @@
-- caching 
-- Example questions 
 - Multiple chats 
-- Multiturn Chats 
 - refactor to using claudette
+    - Multiturn Chats 

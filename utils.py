@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import logging
 import requests
 from bs4 import BeautifulSoup
+import apsw
 
 load_dotenv()
 
@@ -12,7 +13,6 @@ anthropic = Anthropic()
 
 ANTHROPIC_MODEL = "claude-3-5-haiku-latest"
 
-anthropic = Anthropic()
 client = instructor.from_anthropic(Anthropic())
 
 
@@ -95,17 +95,6 @@ def get_search_term(query: str) -> SearchTerm:
     return resp
 
 
-def search_radiopaedia(search_query: str):
-    url = "https://radiopaedia.org/search"
-
-    params = {"lang": "us", "q": search_query, "scope": "articles"}
-
-    response = requests.get(url, params=params, headers=http_headers)
-
-    soup = BeautifulSoup(response.content, "html.parser")
-    return soup
-
-
 def structure_search_result(result, i):
     return {
         "id": i,
@@ -161,14 +150,8 @@ def get_best_result(query: str, search_results) -> BestSearchResult:
     return resp
 
 
-def get_article_text(url):
-    response = requests.get(url, headers=http_headers)
-    soup = BeautifulSoup(response.content, "html.parser")
-    return soup.select("#content > div.body.user-generated-content")[0].text.strip()
-
-
-def search_results(search_term: str):
-    soup = search_radiopaedia(search_term.text)
+def search_results(search_term: str, cursor):
+    soup = search_radiopaedia(search_term.text, cursor)
 
     all_search_results = [
         structure_search_result(search_result, i)
@@ -176,3 +159,55 @@ def search_results(search_term: str):
     ][:5]
 
     return all_search_results
+
+
+def setup_db(db_path=":memory:"):
+    apsw.bestpractice.apply(apsw.bestpractice.recommended)
+    connection = apsw.Connection(db_path)
+    cursor = connection.cursor()
+    cursor.execute(
+        "CREATE TABLE IF NOT EXISTS radiopaedia_search_results (search_query TEXT PRIMARY KEY, search_results TEXT)"
+    )
+    cursor.execute(
+        "CREATE TABLE IF NOT EXISTS radiopaedia_articles (url TEXT PRIMARY KEY, content TEXT)"
+    )
+    return cursor
+
+
+def get_article_text(url, cursor):
+    cache_hits = cursor.execute(
+        "SELECT content FROM radiopaedia_articles WHERE url = ?", (url,)
+    ).fetchall()
+    if cache_hits:
+        logging.info(f"Cache hit for url: '{url}'")
+        return cache_hits[0][0]
+    response = requests.get(url, headers=http_headers)
+    soup = BeautifulSoup(response.content, "html.parser")
+    content = soup.select("#content > div.body.user-generated-content")[0].text.strip()
+    cursor.execute(
+        "INSERT INTO radiopaedia_articles (url, content) VALUES (?, ?)", (url, content)
+    )
+    return content
+
+
+def search_radiopaedia(search_query: str, cursor):
+    url = "https://radiopaedia.org/search"
+    cache_hits = cursor.execute(
+        "SELECT search_results FROM radiopaedia_search_results WHERE search_query = ?",
+        (search_query,),
+    ).fetchall()
+    if cache_hits:
+        logging.info(f"Cache hit for search query: '{search_query}'")
+        rbody = cache_hits[0][0]
+        return BeautifulSoup(rbody, "html.parser")
+
+    params = {"lang": "us", "q": search_query, "scope": "articles"}
+
+    response = requests.get(url, params=params, headers=http_headers)
+
+    cursor.execute(
+        "INSERT INTO radiopaedia_search_results (search_query, search_results) VALUES (?, ?)",
+        (search_query, response.content),
+    )
+
+    return BeautifulSoup(response.content, "html.parser")
