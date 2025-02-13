@@ -66,26 +66,32 @@ def get_search_term(query: str) -> SearchTerm:
         messages=[
             {
                 "role": "system",
-                "content": """Extract a search term from the provided text. The search term should be the underlying disease or condition that the user is asking about.
+                "content": """Given the user query, generate a search term that will return a relevant article from Radiopaedia. The search term should be the underlying disease, condition or concept that the user is asking about.
                 
                 Examples:
-                text: "What is the most common cause of acute pancreatitis?"
+                user query: "What is the most common cause of acute pancreatitis?"
                 search term: "acute pancreatitis"
                 
-                text: "What MTA score is pathological for a 77 year old?"
+                user query: "What MTA score is pathological for a 77 year old?"
                 search term: "MTA score"
                 
-                text: "How to differentiate radiation necrosis from tumor recurrence?"
+                user query: "How to differentiate radiation necrosis from tumor recurrence?"
                 search term: "radiation necrosis"
                 
-                text: "How do I measure the tibial tuberosity-trochlear groove distance?"
+                user query: "How do I measure the tibial tuberosity-trochlear groove distance?"
                 search term: "tibial tuberosity-trochlear groove distance"
+                
+                user query: "How does a TOF MRA work?"
+                search term: "TOF MRA"
+                
+                user query: "What is chemical shift imaging?"
+                search term: "chemical shift imaging"
                 
                 """,
             },
             {
                 "role": "user",
-                "content": f"text: {query}",
+                "content": f"user query: {query}",
             },
         ],
         response_model=SearchTerm,
@@ -123,7 +129,7 @@ def format_search_results(results):
         [format_single_search_result(result) for result in results]
     )
 
-    logging.info(f"Formatted search results: {res_string}")
+    logging.info(f"Formatted search results: \n{res_string}")
 
     return res_string
 
@@ -136,7 +142,9 @@ def get_best_result(query: str, search_results) -> BestSearchResult:
         messages=[
             {
                 "role": "system",
-                "content": "return the id of the best matching search result for the given query.",
+                "content": """Return the ID of the search result most relevant to the user's query. Base your decision on the title and body of the search results. 
+                
+                When in doubt, chose the more general or broad search result.""",
             },
             {
                 "role": "user",
@@ -146,7 +154,9 @@ def get_best_result(query: str, search_results) -> BestSearchResult:
         response_model=BestSearchResult,
     )
 
-    logging.info(f"BestSearchResult for query: '{query}' is: '{resp.chain_of_thought}'")
+    logging.info(
+        f"BestSearchResult for query: '{query}' is: '{resp.id}' - {resp.chain_of_thought}"
+    )
 
     return resp
 
