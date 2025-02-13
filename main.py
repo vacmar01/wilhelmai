@@ -9,6 +9,7 @@ from fasthtml.common import (
     serve,
     EventStream,
     Hidden,
+    Title,
     sse_message,
     NotStr,
     Span,
@@ -77,21 +78,21 @@ async def answer_query(query: str, chat: Chat, search: bool = True):
     # Search flow
     term = get_search_term(query)
     yield sse_message(
-        Div(cls="m-2 text-zinc-400 animate-pulse")(f"Searching for '{term.text}'...")
+        Div(cls="my-2 text-zinc-400 animate-pulse")(f"Searching for '{term.text}'...")
     )
     await asyncio.sleep(0.025)
 
     results = search_results(term, c)
     if not results:
         yield sse_message(
-            Div(cls="m-2 text-zinc-800")(f"No results found for '{term.text}'...")
+            Div(cls="my-2 text-zinc-800")(f"No results found for '{term.text}'...")
         )
         yield "event: close\ndata: \n\n"
         return
 
     best = get_best_result(query, results)
     yield sse_message(
-        Div(cls="m-2 text-zinc-400 animate-pulse")(
+        Div(cls="my-2 text-zinc-400 animate-pulse")(
             f"Found best match: '{results[best.id]['title']}'..."
         )
     )
@@ -106,24 +107,27 @@ async def answer_query(query: str, chat: Chat, search: bool = True):
         yield msg
 
 
+bg_style = """background-color: #ffffff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%2327272a' fill-opacity='0.02'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");"""
+
 twcss = Script(src="https://cdn.tailwindcss.com/?plugins=typography")
 sse = Script(src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js")
 app, rt = fast_app(
     pico=False,
     hdrs=(twcss, sse),
     live=True,
+    bodykw={"style": bg_style},
 )
 
 
 def SourceComponent(source: Source):
-    return Div(cls="mt-4 text-xs text-gray-400")(
+    return Div(cls="mt-4 text-xs text-zinc-400")(
         Div(
             Span("Source", cls="block mb-1"),
             A(
                 source.title,
                 href=source.url,
                 target="_blank",
-                cls="rounded inline-block p-1 text-gray-800 bg-zinc-100 font-semibold",
+                cls="rounded inline-block p-1 text-zinc-800 bg-zinc-100 font-semibold border border-zinc-200 hover:opacity-70",
             ),
         )
     )
@@ -137,13 +141,13 @@ def QuestionComponent(qtext=""):
 
 
 def AnswerComponent(*args, **kwargs):
-    return Div(cls="bg-white border border-zinc-100 p-4 ")(
+    return Div(cls="bg-white border border-zinc-200 p-4 rounded")(
         Div("Answer", cls="text-zinc-400 text-sm mb-2"),
         Div(id="loading")(
             Script(
                 "document.body.addEventListener('htmx:sseBeforeMessage', e => {me('#loading').remove()})"
             ),
-            Div(cls="m-2 text-zinc-400 animate-pulse")("Thinking..."),
+            Div(cls="my-2 text-zinc-400 animate-pulse")("Thinking..."),
         ),
         Div(cls="text-zinc-800")(
             *args,
@@ -184,7 +188,7 @@ def index():
                 Hidden(name="query", value=qtext),
                 qtext,
             ),
-            cls="p-4 bg-zinc-100 rounded border border-zinc-200 cursor-pointer hover:opacity-70",
+            cls="p-4 bg-white rounded border border-zinc-200 cursor-pointer hover:opacity-70",
         )
 
     example_queries = [
@@ -210,24 +214,26 @@ def index():
             ),
         )
 
-    return Div(cls="max-w-[600px] mx-auto p-4 max-h-screen flex flex-col")(
+    return Title("RadRAG"), Div(
+        cls="max-w-[600px] mx-auto p-4 max-h-screen flex flex-col"
+    )(
         Div(cls="flex justify-between items-center mb-4")(
             H1(cls="text-3xl font-bold text-zinc-800")("RadRAG"),
             A(
                 href="/",
-                cls="flex gap-2 border border-zinc-200 bg-zinc-100 text-zinc-600 p-2 rounded font-semibold hover:opacity-70",
+                cls="flex gap-2 border border-zinc-200 bg-zinc-100 text-zinc-800 p-2 rounded font-semibold hover:opacity-70",
             )(Heroicon("plus", cls="w-6 h-6"), "New Chat"),
         ),
         Div(
-            cls="space-y-2 p-2 text-zinc-800 bg-zinc-50 rounded flex-1 min-h-0 flex flex-col"
+            cls="space-y-2 p-2 text-zinc-800 bg-zinc-100 border border-zinc-200 rounded flex-1 min-h-0 flex flex-col"
         )(
             Div(id="result", cls="rounded overflow-auto flex-1 min-h-0")(
                 P(
                     "Ask any radiology related question below. RadRAG will try to answer it and give you a source for its answer.",
-                    cls="text-lg text-zinc-400 text-center my-8",
+                    cls="text-zinc-400 text-center my-8",
                 ),
-                H2("Example Questions", cls="text-lg text-zinc-600 mb-2 font-semibold"),
-                Div(cls="grid grid-cols-2 gap-2 text-zinc-600")(
+                H2("Example Questions", cls="text-lg text-zinc-800 mb-2 font-semibold"),
+                Div(cls="grid grid-cols-2 gap-2 text-zinc-800")(
                     *[ExampleQuestion(q) for q in example_queries],
                 ),
             ),
