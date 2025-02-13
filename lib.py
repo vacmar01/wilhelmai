@@ -6,6 +6,7 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 import apsw
+from claudette import models, Chat
 
 load_dotenv()
 
@@ -211,3 +212,15 @@ def search_radiopaedia(search_query: str, cursor):
     )
 
     return BeautifulSoup(response.content, "html.parser")
+
+
+def create_chat():
+    model = models[-1]  # currently 3.5 haiku
+
+    sp = """Answer the user query faithfully using the information in the context. 
+    
+    If you don't know the answer don't fabricate an answer, just say 'I don't know'. 
+    
+    Don't start your answer with something like 'Based on the context...'. Do not mention the context in your answer. This is very important Return the answer directly."""
+
+    return Chat(model, sp=sp, cache=True)
