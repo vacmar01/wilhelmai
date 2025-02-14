@@ -66,32 +66,32 @@ def get_search_term(query: str) -> SearchTerm:
         messages=[
             {
                 "role": "system",
-                "content": """Given the user query, generate a search term that will return a relevant article from Radiopaedia. The search term should be the underlying disease, condition or concept that the user is asking about.
+                "content": """You are an very experienced radiologist.
+                
+                Given the user query, generate a search term that will return a relevant article from Radiopaedia. The search term should be the underlying disease, condition or concept that the user is asking about.
                 
                 Examples:
-                user query: "What is the most common cause of acute pancreatitis?"
-                search term: "acute pancreatitis"
+                <user_query>What is the most common cause of acute pancreatitis?</user_query>
+                <search_term>acute pancreatitis</search_term>
                 
-                user query: "What MTA score is pathological for a 77 year old?"
-                search term: "MTA score"
+                <user_query>What MTA score is pathological for a 77 year old?"</user_query>
+                <search_term>MTA score</search_term>
                 
-                user query: "How to differentiate radiation necrosis from tumor recurrence?"
-                search term: "radiation necrosis"
+                <user_query>How to differentiate radiation necrosis from tumor recurrence?</user_query>
+                <search_term>radiation necrosis</search_term>
                 
-                user query: "How do I measure the tibial tuberosity-trochlear groove distance?"
-                search term: "tibial tuberosity-trochlear groove distance"
+                <user_query>How do I measure the tibial tuberosity-trochlear groove distance?</user_query>
+                <search_term>tibial tuberosity-trochlear groove distance</search_term>
                 
-                user query: "How does a TOF MRA work?"
-                search term: "TOF MRA"
+                <user_query>How does a TOF MRA work?</user_query>
+                <search_term>TOF MRA</search_term>
                 
-                user query: "What is chemical shift imaging?"
-                search term: "chemical shift imaging"
-                
-                """,
+                <user_query>What is chemical shift imaging?</user_query>
+                <search_term>chemical shift imaging</search_term>""",
             },
             {
                 "role": "user",
-                "content": f"user query: {query}",
+                "content": f"<user_query>{query}</user_query>",
             },
         ],
         response_model=SearchTerm,
@@ -139,12 +139,15 @@ def get_best_result(query: str, search_results) -> BestSearchResult:
     resp = client.messages.create(
         model=ANTHROPIC_MODEL,
         max_tokens=1024,
+        temperature=0.0,
         messages=[
             {
                 "role": "system",
                 "content": """Return the ID of the search result most relevant to the user's query. Base your decision on the title and body of the search results. 
+
+                When in doubt, chose the more general or broad search result. But if there is a specfic search result that is more relevant to the <user_query>, choose that one.
                 
-                When in doubt, chose the more general or broad search result.""",
+                You can only chose one search result. Think about your choice carefully step-by-step.""",
             },
             {
                 "role": "user",
