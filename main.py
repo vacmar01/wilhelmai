@@ -4,6 +4,7 @@ from fasthtml.common import (
     Div,
     H1,
     P,
+    Meta,
     Form,
     Input,
     serve,
@@ -121,11 +122,22 @@ fonts = (
     ),
 )
 
+meta_tags = (
+    Meta(name="description", content="RadRAG - Radiology Decision Support"),
+    Meta(property="og:title", content="RadRAG - Radiology Decision Support"),
+    Meta(property="og:description", content="RadRAG - Radiology Decision Support"),
+    Meta(property="og:url", content="https://radrag-production.up.railway.app/"),
+    Meta(property="og:type", content="website"),
+    Meta(name="twitter:card", content="summary"),
+    Meta(name="twitter:title", content="RadRAG - Radiology Decision Support"),
+    Meta(name="twitter:description", content="RadRAG - Radiology Decision Support"),
+)
+
 twcss = Script(src="https://cdn.tailwindcss.com/?plugins=typography")
 sse = Script(src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js")
 app, rt = fast_app(
     pico=False,
-    hdrs=(twcss, sse, *fonts),
+    hdrs=(twcss, sse, *fonts, *meta_tags),
     live=True,
     bodykw={"style": bg_style + "font-family: 'Geist', sans-serif;"},
 )
