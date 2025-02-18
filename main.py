@@ -171,7 +171,7 @@ def DocumentationComponent():
                 "What is this?",
             ),
             P(
-                "RadRAG is an experiment by Dr. Marius Vach. It uses a large language model as well as radiological sources to answer radiology-associated questions. "
+                "RadRAG is an experiment by me, Marius Vach. It uses a large language model as well as radiological sources to answer radiology-associated questions. "
             ),
             P(
                 "It's not meant to be for clinical use, but solely for demonstration purposes. "
