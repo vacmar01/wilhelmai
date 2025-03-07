@@ -165,19 +165,19 @@ def QuestionComponent(qtext=""):
 
 
 def DocumentationComponent():
-    return (
-        Div(cls="text-sm text-zinc-500 prose prose-zinc")(
-            H2(
-                "What is this?",
-            ),
-            P(
-                "RadRAG is an experiment by me, Marius Vach. It uses a large language model as well as radiological sources to answer radiology-associated questions. "
-            ),
-            P(
-                "It's not meant to be for clinical use, but solely for demonstration purposes. "
-            ),
-            P("Do NOT enter any patient data or any other sensitive information."),
-        ),
+    return Div(cls="text-sm text-zinc-500 prose prose-zinc p-4 ")(
+        NotStr(
+            mistletoe.markdown("""This web app demonstrates the use of a large language model (LLM) combined with radiological information sourced from [Radiopaedia.org](https://radiopaedia.org) to answer radiology-related questions.
+
+**Important disclaimer:**
+
+- This tool is **not intended for clinical use** and should only be used for **demonstration, research, and educational purposes**.
+- **Do NOT enter any patient data or any other sensitive information** into this application.
+- All medical content is provided under the [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 License](https://creativecommons.org/licenses/by-nc-sa/3.0/) from Radiopaedia.org.
+
+Each generated answer provides a direct link to the original Radiopaedia.org source content for verification and further reference.
+"""),
+        )
     )
 
 
