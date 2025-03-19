@@ -8,6 +8,7 @@ dependencies = [
     "anthropic>=0.45.2",
     "apsw>=3.49.0.0",
     "claudette>=0.1.3",
+    "cohere>=5.14.0",
     "fh-heroicons",
     "instructor>=1.7.2",
     "mistletoe>=1.4.0",
