@@ -31,7 +31,7 @@ from fh_heroicons import Heroicon
 from claudette import Chat
 
 from lib import (
-    get_search_term,
+    get_search_terms,
     search_results,
     get_best_result,
     get_article_text,
@@ -51,7 +51,7 @@ class Source:
     url: str
 
 
-async def stream_response(content: str, chat: Chat, source: Source = None):
+async def stream_response(content: str, chat: Chat, sources: list[Source] = None):
     """Helper to stream markdown responses with optional source."""
     result = ""
     for text in chat(content, stream=True):
@@ -61,11 +61,18 @@ async def stream_response(content: str, chat: Chat, source: Source = None):
         )
         await asyncio.sleep(0.025)
 
-    if source:
+    if sources:
         yield sse_message(
             (
                 Div(id="content", cls="prose")(NotStr(mistletoe.markdown(result))),
-                SourceComponent(source),
+                Div(cls="mt-4 text-xs text-zinc-400")(
+                    Div(
+                        Span("Sources", cls="block mb-1"),
+                        Div(cls="flex flex-wrap gap-2")(
+                            *[SourceComponent(source) for source in sources],
+                        ),
+                    )
+                ),
             )
         )
     yield "event: close\ndata: \n\n"
@@ -74,40 +81,45 @@ async def stream_response(content: str, chat: Chat, source: Source = None):
 async def answer_query(query: str, chat: Chat, search: bool = True):
     """Main coroutine to search and answer questions."""
     # Simple query - no search needed
-    if not search:  # You'll need to implement this
+    if not search:
         async for msg in stream_response(query, chat):
             yield msg
         return
 
     # Search flow
-    term = get_search_term(query)
-    yield sse_message(
-        Div(cls="my-2 text-zinc-400 animate-pulse")(f"Searching for '{term.text}'...")
-    )
-    await asyncio.sleep(0.025)
+    terms = get_search_terms(query)
+    articles = ""
+    sources = []
 
-    results = search_results(term, c)
-    if not results:
+    for term in terms:
         yield sse_message(
-            Div(cls="my-2 text-zinc-800")(f"No results found for '{term.text}'...")
+            Div(cls="my-2 text-zinc-400 animate-pulse")(f"Searching for '{term}'...")
         )
-        yield "event: close\ndata: \n\n"
-        return
+        await asyncio.sleep(0.025)
 
-    best = get_best_result(query, results)
-    yield sse_message(
-        Div(cls="my-2 text-zinc-400 animate-pulse")(
-            f"Found best match: '{results[best.id]['title']}'..."
+        results = search_results(term, c)
+        if not results:
+            yield sse_message(
+                Div(cls="my-2 text-zinc-800")(f"No results found for '{term}'...")
+            )
+            yield "event: close\ndata: \n\n"
+            return
+
+        best = get_best_result(term, results)
+        yield sse_message(
+            Div(cls="my-2 text-zinc-400 animate-pulse")(
+                f"Found best match: '{results[best.id]['title']}'..."
+            )
         )
-    )
-    await asyncio.sleep(0.025)
+        await asyncio.sleep(0.025)
 
-    url = f"https://radiopaedia.org{results[best.id]['href']}"
-    article = get_article_text(url, c)
-    source = Source(title=results[best.id]["title"], url=url)
-    prompt = f"<context>{article}</context>\n\n<query>{query}</query>"
+        url = f"https://radiopaedia.org{results[best.id]['href']}"
+        articles += get_article_text(url, c)
+        articles += "\n\n"
+        sources.append(Source(title=results[best.id]["title"], url=url))
+    prompt = f"<context>{articles}</context>\n\n<query>{query}</query>"
 
-    async for msg in stream_response(prompt, chat, source):
+    async for msg in stream_response(prompt, chat, sources):
         yield msg
 
 
@@ -144,16 +156,11 @@ app, rt = fast_app(
 
 
 def SourceComponent(source: Source):
-    return Div(cls="mt-4 text-xs text-zinc-400")(
-        Div(
-            Span("Source", cls="block mb-1"),
-            A(
-                source.title,
-                href=source.url,
-                target="_blank",
-                cls="rounded inline-block p-1 text-zinc-800 bg-zinc-100 font-semibold border border-zinc-200 hover:opacity-70",
-            ),
-        )
+    return A(
+        source.title,
+        href=source.url,
+        target="_blank",
+        cls="rounded inline-block p-1 text-zinc-800 bg-zinc-100 font-semibold border border-zinc-200 hover:opacity-70",
     )
 
 

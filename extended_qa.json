@@ -1,0 +1,146 @@
+[
+  {
+    "question": "A 74 year-old patient presents with progressive shortness of breath over the last years. He is a former\nmining worker. CT shows calcified pleural plaques. What is the most likely diagnosis?",
+    "question_identifier": "ExtendedQA-Q1",
+    "reference_answer": "Asbestosis.",
+    "subspecialities": ["Chest", "Computed Tomography"]
+  },
+  {
+    "question": "What is considered a malignant course of the coronary arteries?",
+    "question_identifier": "ExtendedQA-Q2",
+    "reference_answer": "Interarterial course.",
+    "subspecialities": ["Cardiac"]
+  },
+  {
+    "question": "What are the differential diagnoses of a solid mass in the anterosuperior mediastinum?",
+    "question_identifier": "ExtendedQA-Q3",
+    "reference_answer": "Thymoma, thyroid (mass), lymphoma, teratoma (and germ cell tumors), thoracic aorta\n(e.g., aneurysm).",
+    "subspecialities": ["Chest"]
+  },
+  {
+    "question": "What are differential diagnoses of pulmonary cavities?",
+    "question_identifier": "ExtendedQA-Q4",
+    "reference_answer": "Cancer, autoimmune diseases (granulomatosis with polyangiitis, rheumatoid arthritis),\nvascular (bland/septic emboli), infection (e.g., tuberculosis), trauma (pneumatoceles), youth (CPAM, sequestration,\nbronchogenic cyst); Cavity mnemonic.",
+    "subspecialities": ["Chest"]
+  },
+  {
+    "question": "Which MRI contrast agent can be used to detect an insufficiency of a biliary anastomosis?",
+    "question_identifier": "ExtendedQA-Q5",
+    "reference_answer": "Eovist / Gadoxetic acid or disodium.",
+    "subspecialities": ["Gastrointestinal", "Magnetic Resonance Imaging"]
+  },
+  {
+    "question": "What are possible distributions of pumonary nodules? Name one differential diagnosis for each distribution.",
+    "question_identifier": "ExtendedQA-Q6",
+    "reference_answer": "Perilymphatic (e.g., sarcoidosis), centrilobular (special form: tree-in-bud; e.g.,\ntuberculosis), diffuse (e.g., disseminated pulmonary metastasis).",
+    "subspecialities": ["Chest"]
+  },
+  {
+    "question": "I am looking at a prostate MRI and see a lesion in the right posterolateral peripheral zone. The lesion is\nhypointense in T2, hyperintense in DWI, hypointense in ADC and has a strong and early signal enhancement after\ncontrast administration. What kind of lesion could this be?",
+    "question_identifier": "ExtendedQA-Q7",
+    "reference_answer": "Prostate cancer.",
+    "subspecialities": ["Genitourinary", "Magnetic Resonance Imaging"]
+  },
+  {
+    "question": "I am looking at an X-ray of the lumbar spine on a sagittal view. There are prominent endplate densities at\nmultiple contiguous vertebral levels, leading to a sclerotic-lucent-sclerotic appearance. The Patient has a history of\nrenal insufficiency. What is this appearance of the spine called and what is the most likely diagnosis?",
+    "question_identifier": "ExtendedQA-Q8",
+    "reference_answer": "Rugger jersey spine; secondary hyperparathyroidism.",
+    "subspecialities": ["Musculoskeletal"]
+  },
+  {
+    "question": "I see a prominent pulmonary embolus in the right pulmonaly artery on a CT pulmonary angiography. What\nare signs of right ventricular dysfunction?",
+    "question_identifier": "ExtendedQA-Q9",
+    "reference_answer": "Abnormal position of the interventricular septum, contrast reflux into inferior vena\ncava/liver veins, increased diameter of the right ventricle.",
+    "subspecialities": ["Cardiac", "Chest", "Computed Tomography", "Emergency Radiology"]
+  },
+  {
+    "question": "A 24 year-old patient presents with right upper quadrant pain, fever and jaundice. MRI of the liver shows\nT1-hypointense, T2-hyperintense, segmental dilatation of the intrahepatic bile ducts, leading to a multicystic\nappearance. There are multiple concrements in the intrahepatic bile ducts. The patient has no history of bowel disease.\nWhat is the most likely diagnosis?\n37",
+    "question_identifier": "ExtendedQA-Q10",
+    "reference_answer": "Caroli-disease.",
+    "subspecialities": ["Emergency Radiology", "Musculoskeletal"]
+  },
+  {
+    "question": "I am looking at an X-ray of the knee on a anteroposterior view of a patient after trauma. I see an elliptic bone\nfragment projected parallel to the lateral aspect of the tibial plateau. What is the most likely diagnosis?",
+    "question_identifier": "ExtendedQA-Q11",
+    "reference_answer": "Segond fracture, indicative of a rupture of the anterior cruciate ligament.",
+    "subspecialities": ["Gastrointestinal", "Magnetic Resonance Imaging"]
+  },
+  {
+    "question": "I see a right-sided enlarged lymph node posterolateral to the anterior belly of the digastric muscles on a CT\nof the neck. What is the corresponding neck lymph node level?",
+    "question_identifier": "ExtendedQA-Q12",
+    "reference_answer": "Level Ib.",
+    "subspecialities": ["Computed Tomography", "Head and Neck"]
+  },
+  {
+    "question": "I am looking at a CT angiography of the abdomen at the arterial phase. I see a complete defect of contrast\nin the infrarenal aorta extending into both common iliac arteries. What is this condition called?",
+    "question_identifier": "ExtendedQA-Q13",
+    "reference_answer": "Leriche syndrome.",
+    "subspecialities": ["Computed Tomography", "Emergency Radiology", "Vascular Imaging"]
+  },
+  {
+    "question": "I see a lesion in an MRI of the liver that is hyperintense on T2 relative to the surrounding liver parenchyma,\nbut less than the intensity of water. Upon contrast administration, the lesion shows early peripheral nodular\nenhancement that is shifting centripetally on delayed images. What is the most likely diagnosis?",
+    "question_identifier": "ExtendedQA-Q14",
+    "reference_answer": "Hepatic hemangioma.",
+    "subspecialities": ["Gastrointestinal", "Magnetic Resonance Imaging"]
+  },
+  {
+    "question": "What is the most commonly used chemotherapy agent in transcatheter arterial chemoembolisation of\nhepatocellular carcinomas?",
+    "question_identifier": "ExtendedQA-Q15",
+    "reference_answer": "Doxorubicin.",
+    "subspecialities": ["Interventional Radiology"]
+  },
+  {
+    "question": "I see an adrenal lesion in an MRI of the epigastric region. The lesion demonstrates a strong signal dropout\non opposed-phase images. What is the most likely diagnosis?",
+    "question_identifier": "ExtendedQA-Q16",
+    "reference_answer": "Adrenal adenoma.",
+    "subspecialities": ["Gastrointestinal", "Magnetic Resonance Imaging"]
+  },
+  {
+    "question": "I am looking at a contrast-enhanced CT of the abdomen on the arterial phase in a patient with an infrarenal\nabdominal aortic aneurysm that has been treated by EVAR. I see contrast agent in the aneurysmal sac, originating\nfrom a left-sided lumbar artery. What is the most likely diagnosis?",
+    "question_identifier": "ExtendedQA-Q17",
+    "reference_answer": "Endoleak type IIa.",
+    "subspecialities": ["Computed Tomography", "Vascular Imaging"]
+  },
+  {
+    "question": "Strongly hyperdense lesions are noted in the segmental pulmonary arteries of the right lower lobe on a noncontrast CT of the thorax. The patient has a history of vertebroplasty. What kind of lesions could that be?",
+    "question_identifier": "ExtendedQA-Q18",
+    "reference_answer": "Pulmonary cement embolism.",
+    "subspecialities": ["Chest", "Computed Tomography", "Musculoskeletal"]
+  },
+  {
+    "question": "I see a lesion in an MRI of the liver that is slightly hyperintense on T2 and hypointense on T1 relative to the\nsurrounding liver parenchyma. The lesion shows heterogenous arterial enhancement and a washout in the venous\nphase. The lesion shows a central scar on T2w imaging. What is the most likely diagnosis?",
+    "question_identifier": "ExtendedQA-Q19",
+    "reference_answer": "Fibrolamellar hepatocellular carcinoma.",
+    "subspecialities": ["Gastrointestinal", "Magnetic Resonance Imaging"]
+  },
+  {
+    "question": "I see prominent endplate densities at multiple contiguous vertebral levels on a sagittal X-ray of the spine\nand a well-defined lesion of the sixth rib on a chest X-ray. What is the most likely underlying condition?",
+    "question_identifier": "ExtendedQA-Q20",
+    "reference_answer": "Hyperparathyroidism (Rugger-Jersey-Spine and 'brown tumor').",
+    "subspecialities": ["Chest", "Musculoskeletal"]
+  },
+  {
+    "question": "After application of contrast agent into a percutaneous transhepatic biliary drainage, portal vein branches\ndistal to the biliary entry of the drainage show contrast enhancement. What is the most likely diagnosis?",
+    "question_identifier": "ExtendedQA-Q21",
+    "reference_answer": "Portobiliary fistula.",
+    "subspecialities": ["Gastrointestinal", "Magnetic Resonance Imaging"]
+  },
+  {
+    "question": "I see densily sclerotic endplates in a sagittal X-ray of the spine of a 14 year old patient. What is the most\nlikely diagnosis?",
+    "question_identifier": "ExtendedQA-Q22",
+    "reference_answer": "Osteopetrosis.",
+    "subspecialities": ["Musculoskeletal", "Pediatric"]
+  },
+  {
+    "question": "I see mixed opacified and unopacified blood in the IVC at and cranial of the renal veins after on a abdominal\nCT scan at an early contrast phase after i.v. contrast application. The infrarenal vena cava appears mostly unopacified.\nWhat is the most likely diagnosis?",
+    "question_identifier": "ExtendedQA-Q23",
+    "reference_answer": "Contrast flow phenomenon in inferior vena cava (artifact).",
+    "subspecialities": ["Computed Tomography", "Vascular Imaging"]
+  },
+  {
+    "question": "I see a synovial mass on a knee MRI. The mass is T1 and T2 hyperintense. There is a concomitant joint\neffusion. What is the most likely diagnosis?",
+    "question_identifier": "ExtendedQA-Q24",
+    "reference_answer": "Lipoma arborescens.",
+    "subspecialities": ["Magnetic Resonance Imaging", "Musculoskeletal"]
+  }
+]
