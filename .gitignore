@@ -11,3 +11,4 @@ notebooks
 .sesskey
 .vscode/
 .ruff_cache/
+.plash

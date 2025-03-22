@@ -78,49 +78,72 @@ async def stream_response(content: str, chat: Chat, sources: list[Source] = None
     yield "event: close\ndata: \n\n"
 
 
+async def process_term(term: str, c) -> tuple[str, Source]:
+    # Get search results for the term (assumes search_results is now async)
+    results = await search_results(term, c)
+    if not results:
+        # Return None to indicate no results for this term
+        return None
+    best = await get_best_result(term, results)
+
+    # Build the URL and fetch article text (assumes get_article_text is now async)
+    url = f"https://radiopaedia.org{results[best.id]['href']}"
+    article = await get_article_text(url, c)
+    # Return both the article text and the source object
+    return article + "\n\n", Source(title=results[best.id]["title"], url=url)
+
+
 async def answer_query(query: str, chat: Chat, search: bool = True):
+    start_time = asyncio.get_event_loop().time()
     """Main coroutine to search and answer questions."""
-    # Simple query - no search needed
     if not search:
         async for msg in stream_response(query, chat):
             yield msg
         return
 
-    # Search flow
-    terms = get_search_terms(query)
-    articles = ""
-    sources = []
+    terms = await get_search_terms(query)
 
+    # Inform the client that we are starting to search for each term.
     for term in terms:
         yield sse_message(
             Div(cls="my-2 text-zinc-400 animate-pulse")(f"Searching for '{term}'...")
         )
-        await asyncio.sleep(0.025)
 
-        results = search_results(term, c)
-        if not results:
+    # Create and launch all tasks concurrently for each term.
+    tasks = [asyncio.create_task(process_term(term, c)) for term in terms]
+    # Wait for all tasks to finish concurrently.
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    articles = ""
+    sources = []
+    # Process the results in the order of the search terms.
+    for term, result in zip(terms, results):
+        # Handle errors or missing results.
+        if isinstance(result, Exception) or result is None:
+            print(f"Error processing term '{term}': {result}")
             yield sse_message(
-                Div(cls="my-2 text-zinc-800")(f"No results found for '{term}'...")
+                Div(cls="my-2 text-zinc-800")(
+                    f"No results found for '{term}' or an error occurred..."
+                )
             )
             yield "event: close\ndata: \n\n"
             return
 
-        best = get_best_result(term, results)
+        article, source = result
+        articles += article
+        sources.append(source)
         yield sse_message(
             Div(cls="my-2 text-zinc-400 animate-pulse")(
-                f"Found best match: '{results[best.id]['title']}'..."
+                f"Found best match for '{term}'"
             )
         )
         await asyncio.sleep(0.025)
 
-        url = f"https://radiopaedia.org{results[best.id]['href']}"
-        articles += get_article_text(url, c)
-        articles += "\n\n"
-        sources.append(Source(title=results[best.id]["title"], url=url))
     prompt = f"<context>{articles}</context>\n\n<query>{query}</query>"
-
     async for msg in stream_response(prompt, chat, sources):
         yield msg
+    endtime = asyncio.get_event_loop().time()
+    print(f"Answered query in {endtime - start_time:.2f} seconds.")
 
 
 bg_style = """background-color: #ffffff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%2327272a' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");"""
@@ -240,7 +263,7 @@ def index():
         )
 
     example_queries = [
-        "How to differentiate radiation necrosis from tumor progression on MRI?",
+        "How do I differentiate between type 1 and type 2 endoleaks on CTA?",
         "How does blood look like on MRI?",
         "What defines the UIP pattern?",
         "What is the ECASS classification?",

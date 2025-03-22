@@ -1,23 +1,21 @@
 import instructor
-from anthropic import Anthropic
+from anthropic import Anthropic, AsyncAnthropic
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import logging
 import requests
+import httpx
 from bs4 import BeautifulSoup
 import apsw
 from claudette import models, Chat
 
 import os
-import anthropic
 import re
 
 load_dotenv()
 
 
 ANTHROPIC_MODEL = "claude-3-5-haiku-latest"
-
-client = instructor.from_anthropic(Anthropic())
 
 
 logging.basicConfig(
@@ -71,12 +69,12 @@ def extract_all_query_content(text: str) -> list[str]:
     return search_terms
 
 
-def get_search_terms(query: str) -> list[str]:
-    client = anthropic.Anthropic(
+async def get_search_terms(query: str) -> list[str]:
+    client = AsyncAnthropic(
         api_key=os.getenv("ANTHROPIC_API_KEY"),
     )
 
-    message = client.messages.create(
+    message = await client.messages.create(
         model="claude-3-5-haiku-20241022",
         max_tokens=8192,
         temperature=0.6,
@@ -100,7 +98,7 @@ def get_search_terms(query: str) -> list[str]:
 
     search_terms = extract_all_query_content(message.content[0].text)
 
-    logging.info(f"SearchTerm for query: '{query}' is: '{"', '".join(search_terms)}'")
+    logging.info(f"Searchterms for query: '{query}' are: '{search_terms}'")
     return search_terms
 
 
@@ -136,9 +134,10 @@ def format_search_results(results):
     return res_string
 
 
-def get_best_result(query: str, search_results) -> BestSearchResult:
+async def get_best_result(query: str, search_results) -> BestSearchResult:
     # note that client.chat.completions.create will also work
-    resp = client.messages.create(
+    client = instructor.from_anthropic(AsyncAnthropic())
+    resp = await client.messages.create(
         model=ANTHROPIC_MODEL,
         max_tokens=1024,
         temperature=0.0,
@@ -166,8 +165,8 @@ def get_best_result(query: str, search_results) -> BestSearchResult:
     return resp
 
 
-def search_results(search_term: str, cursor):
-    soup = search_radiopaedia(search_term, cursor)
+async def search_results(search_term: str, cursor):
+    soup = await search_radiopaedia(search_term, cursor)
 
     all_search_results = [
         structure_search_result(search_result, i)
@@ -190,14 +189,15 @@ def setup_db(db_path=":memory:"):
     return cursor
 
 
-def get_article_text(url, cursor):
+async def get_article_text(url, cursor):
     cache_hits = cursor.execute(
         "SELECT content FROM radiopaedia_articles WHERE url = ?", (url,)
     ).fetchall()
     if cache_hits:
         logging.info(f"Cache hit for url: '{url}'")
         return cache_hits[0][0]
-    response = requests.get(url, headers=http_headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=http_headers)
     soup = BeautifulSoup(response.content, "html.parser")
     content = soup.select("#content > div.body.user-generated-content")[0].text.strip()
     cursor.execute(
@@ -206,7 +206,7 @@ def get_article_text(url, cursor):
     return content
 
 
-def search_radiopaedia(search_query: str, cursor):
+async def search_radiopaedia(search_query: str, cursor):
     url = "https://radiopaedia.org/search"
     cache_hits = cursor.execute(
         "SELECT search_results FROM radiopaedia_search_results WHERE search_query = ?",
@@ -219,7 +219,8 @@ def search_radiopaedia(search_query: str, cursor):
 
     params = {"lang": "us", "q": search_query, "scope": "articles"}
 
-    response = requests.get(url, params=params, headers=http_headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params, headers=http_headers)
 
     cursor.execute(
         "INSERT INTO radiopaedia_search_results (search_query, search_results) VALUES (?, ?)",
