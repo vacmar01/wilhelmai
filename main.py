@@ -268,8 +268,8 @@ def index():
     example_queries = [
         "How do I differentiate between type 1 and type 2 endoleaks on CTA?",
         "How does blood look like on MRI?",
-        "What defines the UIP pattern?",
-        "What is the ECASS classification?",
+        "how can I differentiate hepatic adenoma from FNH?",
+        "how do I classify hemorrhagic transformation of ischemic stroke?",
     ]
 
     def SubmitForm():
