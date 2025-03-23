@@ -12,3 +12,4 @@ notebooks
 .vscode/
 .ruff_cache/
 .plash
+plash.env

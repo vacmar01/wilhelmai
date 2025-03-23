@@ -33,7 +33,7 @@ from claudette import Chat
 from lib import (
     get_search_terms,
     search_results,
-    get_best_result,
+    get_best_article,
     get_article_text,
     setup_db,
     create_chat,
@@ -84,13 +84,13 @@ async def process_term(term: str, c) -> tuple[str, Source]:
     if not results:
         # Return None to indicate no results for this term
         return None
-    best = await get_best_result(term, results)
+    best, _ = await get_best_article(results, term)
 
     # Build the URL and fetch article text (assumes get_article_text is now async)
-    url = f"https://radiopaedia.org{results[best.id]['href']}"
+    url = f"https://radiopaedia.org{best['href']}"
     article = await get_article_text(url, c)
     # Return both the article text and the source object
-    return article + "\n\n", Source(title=results[best.id]["title"], url=url)
+    return article + "\n\n", Source(title=best["title"], url=url)
 
 
 async def answer_query(query: str, chat: Chat, search: bool = True):
@@ -157,15 +157,17 @@ fonts = (
     ),
 )
 
+description = "RadRAG - Revolutionizing Radiology Education"
+
 meta_tags = (
-    Meta(name="description", content="RadRAG - Radiology Decision Support"),
-    Meta(property="og:title", content="RadRAG - Radiology Decision Support"),
-    Meta(property="og:description", content="RadRAG - Radiology Decision Support"),
+    Meta(name="description", content=description),
+    Meta(property="og:title", content=description),
+    Meta(property="og:description", content=description),
     Meta(property="og:url", content="https://radrag-production.up.railway.app/"),
     Meta(property="og:type", content="website"),
     Meta(name="twitter:card", content="summary"),
-    Meta(name="twitter:title", content="RadRAG - Radiology Decision Support"),
-    Meta(name="twitter:description", content="RadRAG - Radiology Decision Support"),
+    Meta(name="twitter:title", content=description),
+    Meta(name="twitter:description", content=description),
 )
 
 twcss = Script(src="https://cdn.tailwindcss.com/?plugins=typography")
@@ -285,7 +287,7 @@ def index():
             ),
         )
 
-    return Title("RadRAG"), Div(
+    return Title(description), Div(
         cls="max-w-[600px] mx-auto p-4 max-h-screen flex flex-col"
     )(
         Div(cls="flex justify-between items-center mb-4")(

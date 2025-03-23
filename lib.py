@@ -1,11 +1,9 @@
-import instructor
-from anthropic import Anthropic, AsyncAnthropic
-from pydantic import BaseModel, Field
+from anthropic import AsyncAnthropic
 from dotenv import load_dotenv
 import logging
-import requests
 import httpx
 from bs4 import BeautifulSoup
+import cohere
 import apsw
 from claudette import models, Chat
 
@@ -43,15 +41,6 @@ http_headers = {
 }
 
 
-class BestSearchResult(BaseModel):
-    chain_of_thought: str = Field(
-        ..., title="The reason why this is the best search result for the given query."
-    )
-    id: int = Field(
-        ..., title="The id of the best matching search result for the given query."
-    )
-
-
 def extract_all_query_content(text: str) -> list[str]:
     # Extract content between search_terms tags
     search_terms_match = re.search(
@@ -75,7 +64,7 @@ async def get_search_terms(query: str) -> list[str]:
     )
 
     message = await client.messages.create(
-        model="claude-3-5-haiku-20241022",
+        model=ANTHROPIC_MODEL,
         max_tokens=8192,
         temperature=0.6,
         messages=[
@@ -111,58 +100,17 @@ def structure_search_result(result, i):
     }
 
 
-def format_search_results(results):
-    def format_single_search_result(result):
-        return (
-            "ID: "
-            + str(result["id"])
-            + "\n\n"
-            + "Title: "
-            + result["title"]
-            + "\n\n"
-            + "Body: "
-            + result["body"]
-            + "\n"
-        )
-
-    res_string = "\n========================\n\n".join(
-        [format_single_search_result(result) for result in results]
-    )
-
-    logging.info(f"Formatted search results: \n{res_string}")
-
-    return res_string
+def get_docs(search_results):
+    docs = [d["title"] + " " + d["body"] for d in search_results]
+    return docs
 
 
-async def get_best_result(query: str, search_results) -> BestSearchResult:
-    # note that client.chat.completions.create will also work
-    client = instructor.from_anthropic(AsyncAnthropic())
-    resp = await client.messages.create(
-        model=ANTHROPIC_MODEL,
-        max_tokens=1024,
-        temperature=0.0,
-        messages=[
-            {
-                "role": "system",
-                "content": """Return the ID of the search result most relevant to the user's query. Base your decision on the title and body of the search results. 
-
-                When in doubt, chose the more general or broad search result. But if there is a specfic search result that is more relevant to the <user_query>, choose that one.
-                
-                You can only chose one search result. Think about your choice carefully step-by-step.""",
-            },
-            {
-                "role": "user",
-                "content": f"query: {query}\n\nsearch_results: {format_search_results(search_results)}",
-            },
-        ],
-        response_model=BestSearchResult,
-    )
-
-    logging.info(
-        f"BestSearchResult for query: '{query}' is: '{resp.id}' - {resp.chain_of_thought}"
-    )
-
-    return resp
+async def get_best_article(results, query):
+    client = cohere.AsyncClient(api_key=os.getenv("COHERE_API_KEY"))
+    reranked = await client.rerank(query=query, documents=get_docs(results), top_n=5)
+    reranked_idx = reranked.results[0].index
+    score = reranked.results[0].relevance_score
+    return results[reranked_idx], score
 
 
 async def search_results(search_term: str, cursor):
@@ -171,7 +119,7 @@ async def search_results(search_term: str, cursor):
     all_search_results = [
         structure_search_result(search_result, i)
         for i, search_result in enumerate(soup.find_all(class_="search-result"))
-    ][:5]
+    ]
 
     return all_search_results
 
