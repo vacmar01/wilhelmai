@@ -15,6 +15,7 @@ from fasthtml.common import (
     Title,
     sse_message,
     NotStr,
+    Img,
     Span,
     A,
     Link,
@@ -157,7 +158,7 @@ fonts = (
     ),
 )
 
-description = "RadRAG - Revolutionizing Radiology Education"
+description = "wilhelm.ai - Revolutionizing Radiology Education"
 
 meta_tags = (
     Meta(name="description", content=description),
@@ -293,7 +294,7 @@ def index():
         Div(cls="flex justify-between items-center mb-4")(
             H1(cls="text-3xl font-bold text-zinc-800 flex gap-2 items-center")(
                 Heroicon("cube-transparent", cls="text-green-500 w-6 h-6"),
-                A(href="/")("RadRAG"),
+                A(href="/")("wilhelm", Span(".ai", cls="text-green-500")),
             ),
             Button(
                 Heroicon("information-circle", cls="w-6 h-6 text-zinc-800"),
@@ -320,9 +321,12 @@ def index():
             cls="space-y-2 p-2 text-zinc-800 bg-zinc-100 border border-zinc-200 rounded flex-1 min-h-0 flex flex-col"
         )(
             Div(id="result", cls="rounded overflow-auto flex-1 min-h-0")(
-                P(
-                    "Ask any radiology related question below. RadRAG will try to answer it and give you a source for its answer.",
-                    cls="text-zinc-400 text-center my-8",
+                Div(cls="flex py-2")(
+                    Img(src="assets/roentgen_sketch.svg", cls="w-32 mx-auto"),
+                    P(
+                        "Ask any radiology-related question below. 'wilhelm.ai' will try to answer it and give you sources for its answer.",
+                        cls="text-zinc-400 my-8",
+                    ),
                 ),
                 H2("Example Questions", cls="text-lg text-zinc-800 mb-2 font-semibold"),
                 Div(cls="grid grid-cols-2 gap-2 text-zinc-800")(
@@ -330,6 +334,9 @@ def index():
                 ),
             ),
             Div(cls="shrink-0")(SubmitForm()),
+        ),
+        P(cls="text-xs text-zinc-400 text-center mt-4")(
+            "wilhelm.ai is an educational tool and does not replace clinical judgment. Always verify findings with official guidelines and medical literature."
         ),
     )
 
