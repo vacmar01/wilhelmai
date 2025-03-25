@@ -1,5 +1,11 @@
-from lib import extract_all_query_content, get_search_terms
+from lib import (
+    extract_all_query_content,
+    get_search_terms,
+    get_docs,
+    structure_search_result,
+)
 from types import SimpleNamespace
+from bs4 import BeautifulSoup
 import pytest
 
 
@@ -83,3 +89,75 @@ def test_extract_all_query_content_with_whitespace():
     
     </search_terms>"""
     assert extract_all_query_content(text) == ["TOF MRA", "chemical shift imaging"]
+
+
+def test_get_docs():
+    # Arrange
+    search_results = [
+        {
+            "title": "Document 1",
+            "body": "Summary of Document 1",
+        },
+        {
+            "title": "Document 2",
+            "body": "Summary of Document 2",
+        },
+    ]
+
+    # Act
+    results = get_docs(search_results)
+
+    # Assert
+    assert results == [
+        "Document 1 Summary of Document 1",
+        "Document 2 Summary of Document 2",
+    ]
+
+
+def test_single_get_docs():
+    # Arrange
+    search_results = [
+        {
+            "title": "Document 1",
+            "body": "Summary of Document 1",
+        }
+    ]
+
+    # Act
+    results = get_docs(search_results)
+
+    # Assert
+    assert results == ["Document 1 Summary of Document 1"]
+
+
+def test_structure_search_results():
+    # Arrange
+    search_result = """<a class="search-result search-result-article" href="/articles/hepatic-adenoma?lang=us">
+  <div class="col-xs-12 no-padding">
+    <div class="search-result-header">
+      <div class="search-result-type label label-article">
+        Article
+      </div>
+      <div class="search-result-title">
+        <h4 class="search-result-title-text">
+          Hepatic adenoma
+        </h4>
+      </div>
+    </div>
+  </div>
+  <div class="search-result-body">
+    
+Hepatic adenomas,&nbsp;or hepatocellular adenomas (HCA), are benign,&nbsp;generally hormone-induced liver tumors. They are usually solitary but can be multiple. Most adenomas have a predilection for hemorrhage, and they must be differentiated from other focal liver lesions due to the risk of HCC transform...
+  </div>
+</a>"""
+
+    result_soup = BeautifulSoup(search_result, "html.parser")
+
+    # Act
+    result = structure_search_result(result_soup.find(class_="search-result"), 0)
+
+    print("result: ", result)
+    # Assert
+    assert result["id"] == 0
+    assert result["title"] == "Hepatic adenoma"
+    assert result["href"] == "/articles/hepatic-adenoma?lang=us"

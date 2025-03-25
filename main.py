@@ -1,3 +1,6 @@
+######## Imports ########
+#########################
+
 from fasthtml.common import (
     Script,
     fast_app,
@@ -34,7 +37,6 @@ from claudette import Chat
 from lib import (
     get_search_terms,
     search_results,
-    get_best_article,
     get_article_text,
     setup_db,
     create_chat,
@@ -43,13 +45,24 @@ from lib import (
 
 load_dotenv()
 
+######## DB STUFF ########
+##########################
+
 c = setup_db("data/cache.db")
+
+
+######## Dataclasses ########
+#############################
 
 
 @dataclass
 class Source:
     title: str
     url: str
+
+
+######## Helper Functions ########
+##################################
 
 
 async def stream_response(content: str, chat: Chat, sources: list[Source] = None):
@@ -85,7 +98,9 @@ async def process_term(term: str, c) -> tuple[str, Source]:
     if not results:
         # Return None to indicate no results for this term
         return None
-    best, _ = await get_best_article(results, term)
+    best = results[
+        0
+    ]  # just choose the first result (works better than reranker in my testing)
 
     # Build the URL and fetch article text (assumes get_article_text is now async)
     url = f"https://radiopaedia.org{best['href']}"
@@ -105,10 +120,11 @@ async def answer_query(query: str, chat: Chat, search: bool = True):
     terms = await get_search_terms(query)
 
     # Inform the client that we are starting to search for each term.
-    for term in terms:
-        yield sse_message(
-            Div(cls="my-2 text-zinc-400 animate-pulse")(f"Searching for '{term}'...")
+    yield sse_message(
+        Div(cls="my-2 text-zinc-400 animate-pulse")(
+            f"Searching for '{', '.join(terms)}'..."
         )
+    )
 
     # Create and launch all tasks concurrently for each term.
     tasks = [asyncio.create_task(process_term(term, c)) for term in terms]
@@ -147,6 +163,9 @@ async def answer_query(query: str, chat: Chat, search: bool = True):
     print(f"Answered query in {endtime - start_time:.2f} seconds.")
 
 
+######## FastHTML App Init ########
+###################################
+
 bg_style = """background-color: #ffffff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%2327272a' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");"""
 
 fonts = (
@@ -179,6 +198,9 @@ app, rt = fast_app(
     live=True,
     bodykw={"style": bg_style + "font-family: 'Geist', sans-serif;"},
 )
+
+######## Components ########
+############################
 
 
 def SourceComponent(source: Source):
@@ -228,6 +250,10 @@ def AnswerComponent(*args, **kwargs):
             **kwargs,
         ),
     )
+
+
+######## Routes ########
+########################
 
 
 @rt

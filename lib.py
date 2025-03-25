@@ -3,9 +3,10 @@ from dotenv import load_dotenv
 import logging
 import httpx
 from bs4 import BeautifulSoup
-import cohere
 import apsw
-from claudette import models, Chat
+import apsw.bestpractice
+from claudette import models, Chat, AsyncChat
+import asyncio
 
 import os
 import re
@@ -91,9 +92,9 @@ async def get_search_terms(query: str) -> list[str]:
     return search_terms
 
 
-def structure_search_result(result, i):
+def structure_search_result(result, idx):
     return {
-        "id": i,
+        "id": idx,
         "title": result.find(class_="search-result-title").text.strip(),
         "body": result.find(class_="search-result-body").text.strip(),
         "href": result["href"],
@@ -101,16 +102,7 @@ def structure_search_result(result, i):
 
 
 def get_docs(search_results):
-    docs = [d["title"] + " " + d["body"] for d in search_results]
-    return docs
-
-
-async def get_best_article(results, query):
-    client = cohere.AsyncClient(api_key=os.getenv("COHERE_API_KEY"))
-    reranked = await client.rerank(query=query, documents=get_docs(results), top_n=5)
-    reranked_idx = reranked.results[0].index
-    score = reranked.results[0].relevance_score
-    return results[reranked_idx], score
+    return [d["title"] + " " + d["body"] for d in search_results]
 
 
 async def search_results(search_term: str, cursor):
@@ -178,7 +170,7 @@ async def search_radiopaedia(search_query: str, cursor):
     return BeautifulSoup(response.content, "html.parser")
 
 
-def create_chat():
+def create_chat(asynchronous=False):
     model = models[-1]  # currently 3.5 haiku
 
     sp = """Answer the user query faithfully using the information in the context. 
@@ -187,4 +179,31 @@ def create_chat():
     
     Don't start your answer with something like 'Based on the context...'. Do not mention the context in your answer. This is very important Return the answer directly."""
 
+    if asynchronous:
+        return AsyncChat(model, sp=sp, cache=True)
     return Chat(model, sp=sp, cache=True)
+
+
+async def answer_question(query: str, cursor):
+    async def process_term(term, cursor):
+        srs = await search_results(term, cursor)
+        best_article = srs[0]
+        score = 0
+        url = f"https://radiopaedia.org{best_article['href']}"
+        article_text = await get_article_text(url, cursor)
+        return article_text, score, url
+
+    search_terms = await get_search_terms(query)
+    tasks = [asyncio.create_task(process_term(term, cursor)) for term in search_terms]
+    results = await asyncio.gather(*tasks)
+    articles = "\n\n".join([r[0] for r in results])
+
+    prompt = f"<context>{articles}</context>\n\n<query>{query}</query>"
+    chat = create_chat(asynchronous=True)
+    answer = await chat(prompt)
+    return {
+        "query": query,
+        "answer": answer.content[0].text,
+        "urls": [r[2] for r in results],
+        "search_terms": search_terms,
+    }
