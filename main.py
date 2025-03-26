@@ -32,6 +32,7 @@ import mistletoe
 from dotenv import load_dotenv
 from fh_heroicons import Heroicon
 from claudette import Chat
+import os
 
 from lib import (
     answer_query,
@@ -149,7 +150,7 @@ sse = Script(src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js")
 app, rt = fast_app(
     pico=False,
     hdrs=(twcss, sse, *fonts, *meta_tags),
-    live=True,
+    live=os.getenv("DEVELOPMENT", False),
     bodykw={"style": bg_style + "font-family: 'Geist', sans-serif;"},
 )
 
