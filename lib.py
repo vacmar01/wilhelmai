@@ -7,11 +7,60 @@ import apsw
 import apsw.bestpractice
 from claudette import models, Chat, AsyncChat
 import asyncio
+from dataclasses import dataclass
 
 import os
 import re
 
 load_dotenv()
+
+
+@dataclass
+class Source:
+    title: str
+    url: str
+
+
+@dataclass
+class AnswerChunkEvent:
+    chunk: str
+
+
+@dataclass
+class SourcesEvent:
+    sources: list[Source]
+    answer: str
+
+
+@dataclass
+class SearchEvent:
+    terms: list[str]
+
+
+@dataclass
+class FoundArticleEvent:
+    term: str
+
+
+@dataclass
+class ErrorEvent:
+    term: str
+    error: str
+
+
+@dataclass
+class StopEvent:
+    pass
+
+
+LogicEvent = (
+    AnswerChunkEvent
+    | SearchEvent
+    | FoundArticleEvent
+    | ErrorEvent
+    | SourcesEvent
+    | StopEvent
+)
 
 
 ANTHROPIC_MODEL = "claude-3-5-haiku-latest"
@@ -184,26 +233,67 @@ def create_chat(asynchronous=False):
     return Chat(model, sp=sp, cache=True)
 
 
-async def answer_question(query: str, cursor):
-    async def process_term(term, cursor):
-        srs = await search_results(term, cursor)
-        best_article = srs[0]
-        score = 0
-        url = f"https://radiopaedia.org{best_article['href']}"
-        article_text = await get_article_text(url, cursor)
-        return article_text, score, url
+async def process_term(term: str, c) -> tuple[str, Source]:
+    # Get search results for the term (assumes search_results is now async)
+    results = await search_results(term, c)
+    if not results:
+        # Return None to indicate no results for this term
+        return None
+    best = results[
+        0
+    ]  # just choose the first result (works better than reranker in my testing)
 
-    search_terms = await get_search_terms(query)
-    tasks = [asyncio.create_task(process_term(term, cursor)) for term in search_terms]
-    results = await asyncio.gather(*tasks)
-    articles = "\n\n".join([r[0] for r in results])
+    # Build the URL and fetch article text (assumes get_article_text is now async)
+    url = f"https://radiopaedia.org{best['href']}"
+    article = await get_article_text(url, c)
+    # Return both the article text and the source object
+    return article + "\n\n", Source(title=best["title"], url=url)
+
+
+async def answer_query(query: str, chat: Chat, c: apsw.Cursor, search: bool = True):
+    start_time = asyncio.get_event_loop().time()
+    """Main coroutine to search and answer questions."""
+    if not search:
+        async for msg in chat(query, stream=True):
+            yield msg
+        yield StopEvent()
+        return
+
+    terms = await get_search_terms(query)
+
+    # Inform the client that we are starting to search for each term.
+    yield SearchEvent(terms=terms)
+    await asyncio.sleep(0.025)
+
+    # Create and launch all tasks concurrently for each term.
+    tasks = [asyncio.create_task(process_term(term, c)) for term in terms]
+    # Wait for all tasks to finish concurrently.
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    articles = ""
+    sources = []
+    # Process the results in the order of the search terms.
+    for term, result in zip(terms, results):
+        # Handle errors or missing results.
+        if isinstance(result, Exception) or result is None:
+            yield ErrorEvent(term=term, error=str(result))
+            return
+
+        article, source = result
+        articles += article
+        sources.append(source)
+        yield FoundArticleEvent(term=term)
+        await asyncio.sleep(0.5)
 
     prompt = f"<context>{articles}</context>\n\n<query>{query}</query>"
-    chat = create_chat(asynchronous=True)
-    answer = await chat(prompt)
-    return {
-        "query": query,
-        "answer": answer.content[0].text,
-        "urls": [r[2] for r in results],
-        "search_terms": search_terms,
-    }
+
+    result = ""
+    for text in chat(prompt, stream=True):
+        result += text
+        yield AnswerChunkEvent(chunk=result)
+        await asyncio.sleep(0.025)
+    if sources:
+        yield SourcesEvent(sources=sources, answer=result)
+    yield StopEvent()
+    endtime = asyncio.get_event_loop().time()
+    print(f"Answered query in {endtime - start_time:.2f} seconds.")

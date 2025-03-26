@@ -30,14 +30,19 @@ from fasthtml.common import (
 import asyncio
 import mistletoe
 from dotenv import load_dotenv
-from dataclasses import dataclass
 from fh_heroicons import Heroicon
 from claudette import Chat
 
 from lib import (
-    get_search_terms,
-    search_results,
-    get_article_text,
+    answer_query,
+    AnswerChunkEvent,
+    SourcesEvent,
+    SearchEvent,
+    FoundArticleEvent,
+    ErrorEvent,
+    StopEvent,
+    LogicEvent,
+    Source,
     setup_db,
     create_chat,
 )
@@ -51,116 +56,65 @@ load_dotenv()
 c = setup_db("data/cache.db")
 
 
-######## Dataclasses ########
-#############################
-
-
-@dataclass
-class Source:
-    title: str
-    url: str
-
-
 ######## Helper Functions ########
 ##################################
 
 
-async def stream_response(content: str, chat: Chat, sources: list[Source] = None):
-    """Helper to stream markdown responses with optional source."""
-    result = ""
-    for text in chat(content, stream=True):
-        result += text
-        yield sse_message(
-            Div(id="content", cls="prose")(NotStr(mistletoe.markdown(result)))
-        )
-        await asyncio.sleep(0.025)
-
-    if sources:
-        yield sse_message(
-            (
-                Div(id="content", cls="prose")(NotStr(mistletoe.markdown(result))),
-                Div(cls="mt-4 text-xs text-zinc-400")(
-                    Div(
-                        Span("Sources", cls="block mb-1"),
-                        Div(cls="flex flex-wrap gap-2")(
-                            *[SourceComponent(source) for source in sources],
-                        ),
-                    )
-                ),
+def event_to_sse(event: LogicEvent):
+    match event:
+        case AnswerChunkEvent(chunk):
+            return sse_message(
+                Div(id="content", cls="prose")(NotStr(mistletoe.markdown(chunk)))
             )
-        )
-    yield "event: close\ndata: \n\n"
-
-
-async def process_term(term: str, c) -> tuple[str, Source]:
-    # Get search results for the term (assumes search_results is now async)
-    results = await search_results(term, c)
-    if not results:
-        # Return None to indicate no results for this term
-        return None
-    best = results[
-        0
-    ]  # just choose the first result (works better than reranker in my testing)
-
-    # Build the URL and fetch article text (assumes get_article_text is now async)
-    url = f"https://radiopaedia.org{best['href']}"
-    article = await get_article_text(url, c)
-    # Return both the article text and the source object
-    return article + "\n\n", Source(title=best["title"], url=url)
-
-
-async def answer_query(query: str, chat: Chat, search: bool = True):
-    start_time = asyncio.get_event_loop().time()
-    """Main coroutine to search and answer questions."""
-    if not search:
-        async for msg in stream_response(query, chat):
-            yield msg
-        return
-
-    terms = await get_search_terms(query)
-
-    # Inform the client that we are starting to search for each term.
-    yield sse_message(
-        Div(cls="my-2 text-zinc-400 animate-pulse")(
-            f"Searching for '{', '.join(terms)}'..."
-        )
-    )
-
-    # Create and launch all tasks concurrently for each term.
-    tasks = [asyncio.create_task(process_term(term, c)) for term in terms]
-    # Wait for all tasks to finish concurrently.
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-
-    articles = ""
-    sources = []
-    # Process the results in the order of the search terms.
-    for term, result in zip(terms, results):
-        # Handle errors or missing results.
-        if isinstance(result, Exception) or result is None:
-            print(f"Error processing term '{term}': {result}")
-            yield sse_message(
+        case SourcesEvent(sources, answer):
+            return sse_message(
+                (
+                    Div(id="content", cls="prose")(NotStr(mistletoe.markdown(answer))),
+                    Div(cls="mt-4 text-xs text-zinc-400")(
+                        Div(
+                            Span("Sources", cls="block mb-1"),
+                            Div(cls="flex flex-wrap gap-2")(
+                                *[SourceComponent(source) for source in sources],
+                            ),
+                        )
+                    ),
+                )
+            )
+        case SearchEvent(terms):
+            return sse_message(
+                Div(cls="my-2 text-zinc-400 animate-pulse")(
+                    f"Searching for '{', '.join(terms)}'..."
+                )
+            )
+        case FoundArticleEvent(term):
+            return sse_message(
+                Div(cls="my-2 text-zinc-400 animate-pulse")(
+                    f"Found best match for '{term}'"
+                )
+            )
+        case ErrorEvent(term, error):
+            print(f"Error processing term '{term}': {error}")
+            return sse_message(
                 Div(cls="my-2 text-zinc-800")(
                     f"No results found for '{term}' or an error occurred..."
                 )
             )
-            yield "event: close\ndata: \n\n"
+        case StopEvent():
+            return "event: close\ndata: \n\n"
+
+
+async def answer_query_sse(query: str, chat: Chat, search: bool = True):
+    """This function consumes the events from the answer_query generator and yields SSE messages with HTML in it."""
+    start_time = asyncio.get_event_loop().time()
+
+    async for event in answer_query(query, chat, c, search):
+        yield event_to_sse(event)
+        if isinstance(event, StopEvent):
+            end_time = asyncio.get_event_loop().time()
+            print(f"answered query in {end_time - start_time:.2f} seconds")
             return
-
-        article, source = result
-        articles += article
-        sources.append(source)
-        yield sse_message(
-            Div(cls="my-2 text-zinc-400 animate-pulse")(
-                f"Found best match for '{term}'"
-            )
-        )
-        await asyncio.sleep(0.025)
-
-    prompt = f"<context>{articles}</context>\n\n<query>{query}</query>"
-    async for msg in stream_response(prompt, chat, sources):
-        yield msg
-    endtime = asyncio.get_event_loop().time()
-    print(f"Answered query in {endtime - start_time:.2f} seconds.")
+        if isinstance(event, ErrorEvent):
+            return
 
 
 ######## FastHTML App Init ########
@@ -170,7 +124,7 @@ bg_style = """background-color: #ffffff; background-image: url("data:image/svg+x
 
 fonts = (
     Link(rel="preconnect", href="https://fonts.googleapis.com"),
-    Link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin=""),
+    Link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin=True),
     Link(
         href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap",
         rel="stylesheet",
@@ -280,7 +234,7 @@ def index():
 
     @rt
     def receive_answer(query: str, search: bool = False):
-        return EventStream(answer_query(query, chat, search=search))
+        return EventStream(answer_query_sse(query, chat, search=search))
 
     def ExampleQuestion(qtext=""):
         return Div(
