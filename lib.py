@@ -67,7 +67,7 @@ async def get_search_terms(query: str) -> list[str]:
     message = await client.messages.create(
         model=ANTHROPIC_MODEL,
         max_tokens=8192,
-        temperature=0.6,
+        temperature=0.2,
         messages=[
             {
                 "role": "user",

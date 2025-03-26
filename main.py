@@ -293,7 +293,7 @@ def index():
 
     example_queries = [
         "How do I differentiate between type 1 and type 2 endoleaks on CTA?",
-        "How does blood look like on MRI?",
+        "what critical shoulder angle is normal?",
         "how can I differentiate hepatic adenoma from FNH?",
         "how do I classify hemorrhagic transformation of ischemic stroke?",
     ]
