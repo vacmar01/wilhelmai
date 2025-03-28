@@ -254,8 +254,11 @@ async def answer_query(query: str, chat: Chat, c: apsw.Cursor, search: bool = Tr
     start_time = asyncio.get_event_loop().time()
     """Main coroutine to search and answer questions."""
     if not search:
-        async for msg in chat(query, stream=True):
-            yield msg
+        result = ""
+        for text in chat(query, stream=True):
+            result += text
+            yield AnswerChunkEvent(chunk=result)
+            await asyncio.sleep(0.025)
         yield StopEvent()
         return
 
