@@ -21,6 +21,7 @@ from fasthtml.common import (
     Img,
     Span,
     A,
+    Br,
     Link,
     H2,
     HttpHeader,
@@ -309,14 +310,35 @@ def index():
             cls="space-y-2 p-2 text-zinc-800 bg-zinc-100 border border-zinc-200 rounded flex-1 min-h-0 flex flex-col"
         )(
             Div(id="result", cls="rounded overflow-auto flex-1 min-h-0")(
-                Div(cls="flex py-2")(
-                    Img(src="assets/roentgen_sketch.svg", cls="w-32 mx-auto"),
-                    P(
-                        "Ask any radiology-related question below. 'wilhelm.ai' will try to answer it and give you sources for its answer.",
-                        cls="text-zinc-400 my-8",
+                Div(cls="flex py-4 gap-2")(
+                    Img(
+                        src="assets/roentgen_sketch.svg",
+                        cls="hidden md:block w-32 mx-auto",
+                        id="wilhelm",
+                    ),
+                    Div(
+                        H1(
+                            "Reliable Radiology Knowledge, ",
+                            Br(),
+                            "One Question Away.",
+                            cls="text-zinc-800 font-semibold text-2xl mb-2",
+                        ),
+                        P(
+                            "Wilhelm.ai finds and summarizes authoritative Radiopaedia content to answer your questions — fast, transparent, and educational.",
+                            cls="text-zinc-400 text-sm",
+                        ),
                     ),
                 ),
-                H2("Example Questions", cls="text-lg text-zinc-800 mb-2 font-semibold"),
+                Div(cls="w-full border-1 border-t border-zinc-200 my-2")(),
+                Div(cls="my-4")(
+                    H2(
+                        "Explore Example Questions",
+                        cls="text-lg text-zinc-800 font-semibold",
+                    ),
+                    P(cls="text-sm text-zinc-400")(
+                        "Click on a question to get a trusted, AI-powered answer."
+                    ),
+                ),
                 Div(cls="grid grid-cols-2 gap-2 text-zinc-800")(
                     *[ExampleQuestion(q) for q in example_queries],
                 ),
