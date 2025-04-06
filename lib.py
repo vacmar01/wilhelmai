@@ -147,11 +147,36 @@ async def get_search_terms(query: str) -> list[str]:
     client = AsyncAnthropic(
         api_key=os.getenv("ANTHROPIC_API_KEY"),
     )
+    client = AsyncOpenAI(
+        base_url="https://api.together.xyz/v1",
+        api_key=os.getenv("TOGETHER_API_KEY"),
+    )
+    model = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
 
-    message = await client.messages.create(
-        model=ANTHROPIC_MODEL,
-        max_tokens=8192,
-        temperature=0.2,
+    # message = await client.messages.create(
+    #     model=ANTHROPIC_MODEL,
+    #     max_tokens=8192,
+    #     temperature=0.2,
+    #     messages=[
+    #         {
+    #             "role": "user",
+    #             "content": [
+    #                 {
+    #                     "type": "text",
+    #                     "text": '<examples>\n<example>\n<query>\nWhat are the findings of acute pancreatitis on contrast-enhanced CT?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concept: acute pancreatitis\n2. The query does not require a comparison or multiple distinct concepts.\n3. The most appropriate technical term is "acute pancreatitis".\n4. This search term is justified because it directly addresses the main concept in the query. Although the query asks about the cause, searching for "acute pancreatitis" will likely provide information about its etiology, including the most common cause.\n</analysis>\n<search_terms>acute pancreatitis</search_terms>\n</ideal_output>\n</example>\n<example>\n<query>\nWhat is the MTA score?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concept: MTA score\n2. The query does not require a comparison or multiple distinct concepts.\n3. The most appropriate technical term is "MTA score".\n4. This search term is justified because it directly addresses the main concept in the query. While the query asks about a specific age and pathological score, searching for "MTA score" will likely provide comprehensive information about the scoring system, including age-related norms and pathological thresholds.\n</analysis>\n<search_terms>MTA score</search_terms>\n</ideal_output>\n</example>\n<example>\n<query>\nHow to differentiate radiation necrosis from tumor recurrence on MRI?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concepts: radiation necrosis, tumor recurrence\n2. The query implies a comparison between two conditions, but does not explicitly ask for both to be searched.\n3. The most appropriate technical term is "radiation necrosis".\n4. This search term is justified because it focuses on one of the main concepts in the query. While the question involves differentiating between radiation necrosis and tumor recurrence, searching for "radiation necrosis" will likely provide information on its characteristics and how to distinguish it from tumor recurrence. As per the guidelines, we provide only one search term unless explicitly asked for multiple terms.\n</analysis>\n<search_terms>radiation necrosis</search_terms>\n</ideal_output>\n</example>\n<example>\n<query>\nHow to differentiate primary CNS lymphoma from glioblastoma on MRI?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concepts: primary CNS lymphoma, glioblastoma\n2. The query explicitly asks for a comparison between two conditions.\n3. The most appropriate technical terms are "CNS lymphoma" and "glioblastoma".\n4. These search terms are justified because the query specifically asks for a comparison between these two conditions. As per the guidelines, we provide multiple search terms when the query explicitly requires a comparison.\n</analysis>\n<search_terms>CNS lymphoma\nglioblastoma</search_terms>\n</ideal_output>\n</example>\n<example>\n<query>\nHow does a TOF MRA work?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concept: TOF MRA (Time-of-Flight Magnetic Resonance Angiography)\n2. The query does not require a comparison or multiple distinct concepts.\n3. The most appropriate technical term is "TOF MRA".\n4. This search term is justified because it directly addresses the main concept in the query. While the question asks about the working principle, searching for "TOF MRA" will likely provide comprehensive information about the technique, including how it works.\n</analysis>\n<search_terms>TOF MRA</search_terms>\n</ideal_output>\n</example>\n<example>\n<query>\nWhat\'s chemical shift imaging?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concept: chemical shift imaging\n2. The query does not require a comparison or multiple distinct concepts.\n3. The most appropriate technical term is "chemical shift imaging".\n4. This search term is justified because it directly matches the concept asked about in the query. It is a concise noun phrase that captures the specific imaging technique in question.\n</analysis>\n<search_terms>chemical shift imaging</search_terms>\n</ideal_output>\n</example>\n</examples>\n\n',
+    #                 },
+    #                 {
+    #                     "type": "text",
+    #                     "text": f"You are an experienced radiologist tasked with generating relevant search terms for Radiopaedia based on user queries about radiological topics. Your goal is to identify the core concept(s) or condition(s) mentioned in the query and provide concise, targeted search terms.\n\nHere is the user's query:\n\n<user_query>\n{query}\n</user_query>\n\nPlease analyze the query and determine the most appropriate search term(s). Follow these guidelines:\n\n1. Identify the main radiological concept, condition, or imaging technique mentioned in the query.\n2. If the query explicitly asks for a comparison between two conditions or concepts, provide search terms for both.\n3. In most cases, provide only one search term unless the query specifically demands multiple terms.\n4. Search terms should be concise noun phrases or technical terms, not full questions.\n5. Focus on the underlying medical concept, even if the query is about a specific aspect of that concept.\n\nBefore providing your final output, wrap your analysis in <analysis> tags. In this analysis:\n\n1. List the main radiological concepts or conditions mentioned in the query.\n2. Determine if the query requires a comparison or multiple distinct concepts.\n3. Consider the most appropriate technical term or concise noun phrase for each identified concept.\n4. Justify your choice of search term(s) based on the guidelines provided.\n\nAfter your analysis, provide the search term(s) in the following format:\n\n<search_terms>\n[One search term per line]\n</search_terms>\n\nRemember to only include multiple search terms if the query explicitly requires a comparison or multiple distinct concepts.",
+    #                 },
+    #             ],
+    #         },
+    #         {"role": "assistant", "content": [{"type": "text", "text": "<analysis>"}]},
+    #     ],
+    # )
+
+    message = await client.chat.completions.create(
+        model=model,
         messages=[
             {
                 "role": "user",
@@ -162,15 +187,16 @@ async def get_search_terms(query: str) -> list[str]:
                     },
                     {
                         "type": "text",
-                        "text": f"You are an experienced radiologist tasked with generating relevant search terms for Radiopaedia based on user queries about radiological topics. Your goal is to identify the core concept(s) or condition(s) mentioned in the query and provide concise, targeted search terms.\n\nHere is the user's query:\n\n<user_query>\n{query}\n</user_query>\n\nPlease analyze the query and determine the most appropriate search term(s). Follow these guidelines:\n\n1. Identify the main radiological concept, condition, or imaging technique mentioned in the query.\n2. If the query explicitly asks for a comparison between two conditions or concepts, provide search terms for both.\n3. In most cases, provide only one search term unless the query specifically demands multiple terms.\n4. Search terms should be concise noun phrases or technical terms, not full questions.\n5. Focus on the underlying medical concept, even if the query is about a specific aspect of that concept.\n\nBefore providing your final output, wrap your analysis in <analysis> tags. In this analysis:\n\n1. List the main radiological concepts or conditions mentioned in the query.\n2. Determine if the query requires a comparison or multiple distinct concepts.\n3. Consider the most appropriate technical term or concise noun phrase for each identified concept.\n4. Justify your choice of search term(s) based on the guidelines provided.\n\nAfter your analysis, provide the search term(s) in the following format:\n\n<search_terms>\n[One search term per line]\n</search_terms>\n\nRemember to only include multiple search terms if the query explicitly requires a comparison or multiple distinct concepts.",
+                        "text": f"<query>{query}</query>",
                     },
                 ],
             },
             {"role": "assistant", "content": [{"type": "text", "text": "<analysis>"}]},
         ],
+        temperature=0.2,
     )
 
-    search_terms = extract_all_query_content(message.content[0].text)
+    search_terms = extract_all_query_content(message.choices[0].message.content)
 
     logging.info(f"Searchterms for query: '{query}' are: '{search_terms}'")
     return search_terms
