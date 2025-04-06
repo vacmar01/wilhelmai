@@ -22,7 +22,7 @@ class ConversationManager:
     Structure the answer in a way that is easy to read and educational using markdown.
     Do not start your answer with a markdown heading. You can use headings on the answer to mark sections.
 
-    If you don't know the answer don't fabricate an answer, just say 'I don't know'. 
+    If the context doesn't answer the question do not answer the question, just say 'I don't know'. 
 
     Don't start your answer with something like 'Based on the context...'. Do not mention the context in your answer. This is very important! Return the answer directly."""
         self.msgs = [
