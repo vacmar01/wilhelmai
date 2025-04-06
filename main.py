@@ -45,7 +45,7 @@ from lib import (
     LogicEvent,
     Source,
     setup_db,
-    create_chat,
+    ConversationManager,
 )
 
 
@@ -104,11 +104,11 @@ def event_to_sse(event: LogicEvent):
             return "event: close\ndata: \n\n"
 
 
-async def answer_query_sse(query: str, chat: Chat, search: bool = True):
+async def answer_query_sse(query: str, convo: ConversationManager, search: bool = True):
     """This function consumes the events from the answer_query generator and yields SSE messages with HTML in it."""
     start_time = asyncio.get_event_loop().time()
 
-    async for event in answer_query(query, chat, c, search):
+    async for event in answer_query(query, convo, c, search):
         yield event_to_sse(event)
         if isinstance(event, StopEvent):
             end_time = asyncio.get_event_loop().time()
@@ -213,11 +213,11 @@ def AnswerComponent(*args, **kwargs):
 
 @rt
 def index():
-    chat = create_chat()
+    convo = ConversationManager()
 
     @rt
     def ask(query: str):
-        is_fu = bool(chat.h)
+        is_fu = len(convo.get_messages()) > 1
         response = (
             QuestionComponent(query),
             AnswerComponent(
@@ -234,8 +234,11 @@ def index():
         return response
 
     @rt
-    def receive_answer(query: str, search: bool = False):
-        return EventStream(answer_query_sse(query, chat, search=search))
+    def receive_answer(
+        query: str,
+        search: bool = False,
+    ):
+        return EventStream(answer_query_sse(query, convo, search=search))
 
     def ExampleQuestion(qtext=""):
         return Div(

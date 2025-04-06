@@ -5,7 +5,8 @@ import httpx
 from bs4 import BeautifulSoup
 import apsw
 import apsw.bestpractice
-from claudette import models, Chat, AsyncChat
+
+from openai import AsyncOpenAI
 import asyncio
 from dataclasses import dataclass
 
@@ -13,6 +14,40 @@ import os
 import re
 
 load_dotenv()
+
+
+class ConversationManager:
+    def __init__(self):
+        sp = """Answer the user query faithfully using the information in the context. 
+    Structure the answer in a way that is easy to read and educational using markdown.
+    Do not start your answer with a markdown heading. You can use headings on the answer to mark sections.
+
+    If you don't know the answer don't fabricate an answer, just say 'I don't know'. 
+
+    Don't start your answer with something like 'Based on the context...'. Do not mention the context in your answer. This is very important! Return the answer directly."""
+        self.msgs = [
+            {
+                "role": "system",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": sp,
+                    }
+                ],
+            }
+        ]  # Initialize the message list here
+
+    def add_user_message(self, content):
+        self.msgs.append({"role": "user", "content": content})
+
+    def add_assistant_message(self, content):
+        self.msgs.append({"role": "assistant", "content": content})
+
+    def get_messages(self):
+        return self.msgs
+
+    def clear_messages(self):
+        self.msgs = []
 
 
 @dataclass
@@ -219,20 +254,6 @@ async def search_radiopaedia(search_query: str, cursor):
     return BeautifulSoup(response.content, "html.parser")
 
 
-def create_chat(asynchronous=False):
-    model = models[-1]  # currently 3.5 haiku
-
-    sp = """Answer the user query faithfully using the information in the context. 
-    
-    If you don't know the answer don't fabricate an answer, just say 'I don't know'. 
-    
-    Don't start your answer with something like 'Based on the context...'. Do not mention the context in your answer. This is very important Return the answer directly."""
-
-    if asynchronous:
-        return AsyncChat(model, sp=sp, cache=True)
-    return Chat(model, sp=sp, cache=True)
-
-
 async def process_term(term: str, c) -> tuple[str, Source]:
     # Get search results for the term (assumes search_results is now async)
     results = await search_results(term, c)
@@ -250,15 +271,24 @@ async def process_term(term: str, c) -> tuple[str, Source]:
     return article + "\n\n", Source(title=best["title"], url=url)
 
 
-async def answer_query(query: str, chat: Chat, c: apsw.Cursor, search: bool = True):
-    start_time = asyncio.get_event_loop().time()
+async def answer_query(
+    query: str, convo: ConversationManager, c: apsw.Cursor, search: bool = True
+):
     """Main coroutine to search and answer questions."""
+    client = AsyncOpenAI(
+        base_url="https://api.together.xyz/v1",
+        api_key=os.getenv("TOGETHER_API_KEY"),
+    )
+    model = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+
     if not search:
+        convo.add_user_message(query)
         result = ""
-        for text in chat(query, stream=True):
+        async for text in ask_llm(client, model, convo):
             result += text
             yield AnswerChunkEvent(chunk=result)
             await asyncio.sleep(0.025)
+        convo.add_assistant_message(result)
         yield StopEvent()
         return
 
@@ -290,13 +320,23 @@ async def answer_query(query: str, chat: Chat, c: apsw.Cursor, search: bool = Tr
 
     prompt = f"<context>{articles}</context>\n\n<query>{query}</query>"
 
+    convo.add_user_message(prompt)
+
     result = ""
-    for text in chat(prompt, stream=True):
+    async for text in ask_llm(client, model, convo):
         result += text
         yield AnswerChunkEvent(chunk=result)
         await asyncio.sleep(0.025)
+    convo.add_assistant_message(result)
     if sources:
         yield SourcesEvent(sources=sources, answer=result)
     yield StopEvent()
-    endtime = asyncio.get_event_loop().time()
-    print(f"Answered query in {endtime - start_time:.2f} seconds.")
+
+
+async def ask_llm(client, model, convo: ConversationManager):
+    response = await client.chat.completions.create(
+        model=model, messages=convo.get_messages(), temperature=0, stream=True
+    )
+    async for chunk in response:
+        if chunk.choices:
+            yield chunk.choices[0].delta.content
