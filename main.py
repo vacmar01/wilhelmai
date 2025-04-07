@@ -32,7 +32,6 @@ import asyncio
 import mistletoe
 from dotenv import load_dotenv
 from fh_heroicons import Heroicon
-from claudette import Chat
 import os
 
 from lib import (

@@ -18,13 +18,21 @@ load_dotenv()
 
 class ConversationManager:
     def __init__(self):
-        sp = """Answer the user query faithfully using the information in the context. 
-    Structure the answer in a way that is easy to read and educational using markdown.
-    Do not start your answer with a markdown heading. You can use headings on the answer to mark sections.
+        sp = """You are an **Information Extractor Bot**. Your *only* function is to extract answers from a provided text context that directly correspond to a user's query.
 
-    If the context doesn't answer the question do not answer the question, just say 'I don't know'. 
+**Core Rules:**
 
-    Don't start your answer with something like 'Based on the context...'. Do not mention the context in your answer. This is very important! Return the answer directly."""
+1.  **Context is Everything:** You MUST base your response *entirely* on the provided context document.
+2.  **Sufficiency Check:** First, determine if the context contains the necessary information to answer the query.
+3.  **Handling Insufficient Context:** If the context does not contain the answer, you MUST respond with the exact phrase: "The provided context does not contain the information to answer this query." Nothing more.
+4.  **Generating the Answer (If Context Allows):** If the context *does* contain the answer:
+    *   Extract the relevant information.
+    *   Format it using markdown for readability and high educational value.
+    *   Use headings within the answer body if appropriate, but **do not** start the answer with a heading.
+    *   Present the extracted answer directly, without mentioning the context source.
+    *   Keep the answer concise and relevant to the query.
+
+**ABSOLUTE PROHIBITION:** Do not access or use any external knowledge, training data, or general information. Your knowledge is strictly limited to the context provided for each query. Failure to find the answer in the context requires the specific failure message above."""
         self.msgs = [
             {
                 "role": "system",
@@ -144,9 +152,6 @@ def extract_all_query_content(text: str) -> list[str]:
 
 
 async def get_search_terms(query: str) -> list[str]:
-    client = AsyncAnthropic(
-        api_key=os.getenv("ANTHROPIC_API_KEY"),
-    )
     client = AsyncOpenAI(
         base_url="https://api.together.xyz/v1",
         api_key=os.getenv("TOGETHER_API_KEY"),
@@ -280,21 +285,33 @@ async def search_radiopaedia(search_query: str, cursor):
     return BeautifulSoup(response.content, "html.parser")
 
 
-async def process_term(term: str, c) -> tuple[str, Source]:
-    # Get search results for the term (assumes search_results is now async)
+async def process_term(term: str, c) -> tuple[list[str], list[Source]]:
+    # Get search results for the term
     results = await search_results(term, c)
-    if not results:
-        # Return None to indicate no results for this term
-        return None
-    best = results[
-        0
-    ]  # just choose the first result (works better than reranker in my testing)
+    if not results or len(results) == 0:
+        # Return empty lists to indicate no results for this term
+        return [], []
 
-    # Build the URL and fetch article text (assumes get_article_text is now async)
-    url = f"https://radiopaedia.org{best['href']}"
-    article = await get_article_text(url, c)
-    # Return both the article text and the source object
-    return article + "\n\n", Source(title=best["title"], url=url)
+    # Take the top two results (or one if that's all we have)
+    top_results = results[:2] if len(results) >= 2 else results[:1]
+
+    # Create tasks to fetch articles in parallel
+    tasks = []
+    for result in top_results:
+        url = f"https://radiopaedia.org{result['href']}"
+        tasks.append(asyncio.create_task(get_article_text(url, c)))
+
+    # Wait for all article fetches to complete concurrently
+    articles = await asyncio.gather(*tasks)
+
+    # Create Source objects for each result
+    sources = [
+        Source(title=result["title"], url=f"https://radiopaedia.org{result['href']}")
+        for result in top_results
+    ]
+
+    # Return both the article texts and the source objects
+    return [article + "\n\n" for article in articles], sources
 
 
 async def answer_query(
@@ -338,9 +355,9 @@ async def answer_query(
             yield ErrorEvent(term=term, error=str(result))
             return
 
-        article, source = result
-        articles += article
-        sources.append(source)
+        article_texts, term_sources = result
+        articles += "".join(article_texts)
+        sources.extend(term_sources)
         yield FoundArticleEvent(term=term)
         await asyncio.sleep(0.5)
 
@@ -350,7 +367,7 @@ async def answer_query(
 
     result = ""
     async for text in ask_llm(client, model, convo):
-        result += text
+        result += text if isinstance(text, str) else ""
         yield AnswerChunkEvent(chunk=result)
         await asyncio.sleep(0.025)
     convo.add_assistant_message(result)
@@ -361,8 +378,30 @@ async def answer_query(
 
 async def ask_llm(client, model, convo: ConversationManager):
     response = await client.chat.completions.create(
-        model=model, messages=convo.get_messages(), temperature=0, stream=True
+        model=model, messages=convo.get_messages(), temperature=0.2, stream=True
     )
     async for chunk in response:
         if chunk.choices:
             yield chunk.choices[0].delta.content
+
+
+async def answer_query_csv(query: str, cursor):
+    convo = ConversationManager()
+
+    result = {}
+    result["query"] = query
+
+    async for event in answer_query(query, convo, cursor):
+        if isinstance(event, SearchEvent):
+            result["search_terms"] = event.terms
+        elif isinstance(event, SourcesEvent):
+            answer = event.answer
+            sources = event.sources
+            result["answer"] = answer
+            result["urls"] = [source.url for source in sources]
+        elif isinstance(event, StopEvent):
+            break
+        else:
+            pass
+
+    return result

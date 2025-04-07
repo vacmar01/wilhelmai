@@ -1,12 +1,12 @@
-how does a hepatic adenoma look like on MRI?,
-penumbra ischemic stroke perfuson imaging,
-how to differentiate between a hepatic adenoma and focal nodular hyperplasia on MRI?,
-how does japanese encephalitis look like on MRI?,
-what is CLIPPERS?,
-What is a normal callosal angle, and how do I measure it?,
-Can you tell me more about the MTA score?,
-what are the criteria of an liver abscess,
-pneumonitis,
+how does a hepatic adenoma look like on MRI?
+penumbra ischemic stroke perfuson imaging
+how to differentiate between a hepatic adenoma and focal nodular hyperplasia on MRI?
+how does japanese encephalitis look like on MRI?
+what is CLIPPERS?
+What is a normal callosal angle, and how do I measure it?
+Can you tell me more about the MTA score?
+what are the criteria of an liver abscess
+pneumonitis
 how does the penumbra look in ct perfusion?
 ganglioglioma mri appearance
 whats a normal critical shoulder angle?
@@ -25,7 +25,6 @@ How do I differentiate between type 1 and type 2 endoleaks on CTA?
 What are the typical features of bronchiolitis obliterans on HRCT?
 How do I measure tibial tuberosity-trochlear groove (TT-TG) distance on CT?
 What are the imaging findings of primary CNS lymphoma vs. glioblastoma?
-How do I assess bone marrow edema patterns in avascular necrosis on MRI?
 What are the stages of lymphangioleiomyomatosis (LAM) on chest CT?
 How do I differentiate between bacterial and fungal pneumonia on imaging?
 What are the key features of autoimmune pancreatitis on CT/MRI?
@@ -45,7 +44,6 @@ type 1 vs 2 endoleak difference
 bronchiolitis obliterans ct signs
 tt tg measurement
 cns lymphoma vs gbm
-avf bone marrow signal
 LAM stages ct
 bacterial vs fungal pneumonia imaging
 autoimmune panc vs normal
@@ -58,7 +56,6 @@ differentiation of tuberculous vs pyogenic spondylodiscitis on MRI
 CT signs of bowel ischemia
 how to assess vertebral compression fracture acuity on MRI
 what are the MRI findings of Creutzfeldt-Jakob disease?
-CT vs MRI for detecting cerebral amyloid angiopathy
 what are the criteria for diagnosing bronchopulmonary sequestration on CT?
 how to differentiate between osteoid osteoma and osteoblastoma on imaging?
 what does a spinal dural arteriovenous fistula look like on MRI?
