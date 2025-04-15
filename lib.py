@@ -394,6 +394,8 @@ async def answer_query_csv(query: str, cursor):
     async for event in answer_query(query, convo, cursor):
         if isinstance(event, SearchEvent):
             result["search_terms"] = event.terms
+        elif isinstance(event, AnswerChunkEvent):
+            result["answer"] = event.chunk
         elif isinstance(event, SourcesEvent):
             answer = event.answer
             sources = event.sources

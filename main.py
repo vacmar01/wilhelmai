@@ -277,7 +277,7 @@ def index():
         )
 
     return Title(description), Div(
-        cls="max-w-[600px] mx-auto p-4 max-h-screen flex flex-col"
+        cls="max-w-[680px] mx-auto p-4 max-h-screen flex flex-col"
     )(
         Div(cls="flex justify-between items-center mb-4")(
             H1(cls="text-3xl font-bold text-zinc-800 flex gap-2 items-center")(

@@ -1,5 +1,3 @@
 - Multiple chats 
-- let the LLM decide when it needs to query another radiopaedia page (tool call?)
 - pull in example images :-O
-- Retry with different search term if search came up empty
-- Allow for multiple sources (multiple best search results)
+- only show unique sources (`list(set(sources))`)
