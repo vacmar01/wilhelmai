@@ -1,0 +1,450 @@
+id,input,output,created_at
+1,"How do I measure tibial tuberosity-trochlear groove (TT-TG) distance on CT?","To measure the TT-TG distance on CT:
+
+1. Superimpose axial images of the femoral condyles and tibial tuberosity
+2. Draw a line along the posterior femoral condyles
+3. Draw perpendicular lines:
+- One bisecting the tibial tuberosity (TT)
+- One bisecting the trochlear groove sulcus (TG)
+4. Measure the distance between these two lines, which is the TT-TG distance
+
+The normal TT-TG distance is generally considered to be <15 mm, with 15-20 mm being borderline and >20 mm considered abnormal.","2024-11-06 09:16:34"
+2,"what is the ac pc line?","The AC-PC line (anterior commissure-posterior commissure line) is a standard reference plane in neuroimaging used for axial imaging. It is a line that passes through the superior edge of the anterior commissure and the inferior edge of the posterior commissure on midline sagittal images. This line provides a consistent orientation for brain imaging, making it easier to compare different exams. It is typically about 9 degrees steeper than the traditionally used orbitomeatal line in CT imaging.","2024-11-06 09:22:17"
+3,"How can I differentiate a DNET from multiple neuroepithelial cysts?","I apologize, but I cannot find specific information in the given context about differentiating DNETs from multiple neuroepithelial cysts. The context provides detailed information about DNETs, including their epidemiology, pathology, and radiographic features, but does not discuss how to distinguish them from neuroepithelial cysts. To provide an accurate answer, I would need additional reference material.","2024-11-06 09:37:27"
+4,"mcdonald criteria 2017","Based on the 2017 McDonald criteria, the diagnosis of multiple sclerosis can be made in five different scenarios:
+
+1. ≥2 clinical attacks, with ≥2 lesions and objective clinical evidence (no additional data needed)
+
+2. ≥2 clinical attacks, with 1 lesion and objective clinical evidence, plus a clinical history suggestive of a previous lesion (no additional data needed)
+
+3. ≥2 clinical attacks, with 1 lesion and objective clinical evidence, requiring dissemination in space on MRI
+
+4. 1 clinical attack (clinically isolated syndrome) with ≥2 lesions, requiring either:
+- Dissemination in time on MRI, or
+- Demonstration of CSF-specific oligoclonal bands
+
+5. 1 clinical attack (clinically isolated syndrome) with 1 lesion, requiring:
+- Dissemination in space on MRI
+- Dissemination in time on MRI, or demonstration of CSF-specific oligoclonal bands
+
+Dissemination in space requires ≥1 T2-hyperintense lesions in two or more of these locations:
+- Periventricular
+- Cortical or juxtacortical
+- Infratentorial
+- Spinal cord
+
+Dissemination in time can be established by either:
+- A new T2-hyperintense or gadolinium-enhancing lesion compared to a previous scan
+- Simultaneous presence of a gadolinium-enhancing lesion and a non-enhancing T2-hyperintense lesion on one MRI scan","2024-11-06 09:53:23"
+5,"tell me more about ADEM. what are the triggers and how does it look on MRI? ","ADEM is typically triggered by a viral infection or vaccination that occurs 1-2 weeks prior to the onset of symptoms. It most commonly affects children and adolescents under 15 years old, with seasonal peaks observed in winter and spring.
+
+On MRI, ADEM presents with distinctive characteristics:
+- Lesions are usually in white matter, with regions of high signal on T2
+- Can have peripheral enhancement on T1 with contrast (often showing punctate, ring or arc enhancement)
+- Lesions are typically bilateral but asymmetrical
+- Can involve subcortical locations, with potential involvement of thalami and brainstem
+- Diffusion-weighted imaging (DWI) shows peripherally restricted diffusion
+- The center of lesions has increased extracellular water but does not have increased restriction
+
+The pathology is thought to be an autoimmune response, with about half of cases showing anti-MOG antibodies. Clinically, patients may experience fever, headache, decreased consciousness, seizures, and various neurological symptoms. Most patients (50-60%) completely recover within a month, though some may have lasting sequelae or, in rare cases (10-20%), a more severe outcome.","2024-11-06 10:13:58"
+6,"what is wallerian degeneration?","Wallerian degeneration is the process of antegrade degeneration of axons and their accompanying myelin sheaths following a proximal axonal or neuronal cell body injury. It can occur due to various causes such as cerebral infarction, trauma, necrosis, focal demyelination, or hemorrhage. The process involves the progressive breakdown of axons and myelin sheaths distal to the site of injury, which can be divided into four stages that span from weeks to months or years, ultimately resulting in atrophy of the white matter tracts.","2024-11-06 10:32:08"
+7,"what is laminar necrosis and how does it look on mri? ","Cortical laminar necrosis is a condition where specific layers of the cerebral cortex undergo cell death. On MRI, it appears as a gyriform (curved/ribbon-like) T1 hyperintense signal involving the cerebral cortex. This means the affected cortical layers will look brighter on T1-weighted images. The hyperintensity is likely due to the accumulation of denatured proteins and changes in the cortical tissue after neuronal cell death.","2024-11-06 10:33:21"
+8,"are there ways to differentiation radiation necrosis from tumor progression in glioblastoma?","Yes, there are several ways to differentiate radiation necrosis from tumor progression in glioblastoma:
+
+1. Timing:
+- Radiation necrosis typically occurs later (>12 months after treatment)
+- Pseudoprogression usually occurs within the first 3-6 months after treatment
+
+2. Advanced MRI sequences can help:
+- Perfusion:
+* Radiation necrosis/pseudoprogression: reduced cerebral blood volume
+* Tumor progression: elevated cerebral blood volume
+
+- Spectroscopy:
+* Radiation necrosis/pseudoprogression:
+- Low choline
+- Increased lactate and lipid peaks
+- Flat metabolite trace
+* Tumor progression: High choline, low lipid and lactate
+
+- Diffusion (ADC values):
+* Radiation necrosis/pseudoprogression: Elevated ADC values (≥1300 x 10-6 mm2/s)
+* Tumor progression: Lower ADC values
+
+3. Location: Radiation necrosis/pseudoprogression typically occurs within the radiation field (60 Gy)
+
+4. Clinical status: Patients with radiation necrosis/pseudoprogression often remain clinically stable","2024-11-06 12:28:25"
+9,pneumonitis,"Pneumonitis is a broad medical term that indicates inflammation of the lung, specifically referring to inflammation of the pulmonary interstitium in clinical practice and radiology. It is often used interchangeably with interstitial pneumonia. The condition can have multiple causes, including:
+
+1. Hypersensitivity pneumonitis (both non-fibrotic and fibrotic forms)
+2. Radiation-induced pneumonitis
+3. Lymphocytic interstitial pneumonitis
+4. Acute conditions like:
+- Lupus pneumonitis
+- Aspiration pneumonitis
+- Interstitial pneumonitis
+
+5. Chronic interstitial pneumonitis
+6. Collagen vascular disease-related pneumonitis
+7. Drug-induced pneumonitis, such as:
+- Pemtrexed
+- Pembrolizumab
+- Crizotinib
+- Thalidomide
+- Docetaxel
+- Immune checkpoint inhibitor therapies
+- Rituximab
+
+The condition can also be part of idiopathic interstitial pneumonia (IIP), where the cause is unknown.","2024-11-06 12:31:23"
+10,"mcdonald criteria","The McDonald criteria are diagnostic guidelines used to diagnose multiple sclerosis (MS). They involve clinical, radiographic, and laboratory criteria that can be applied in different scenarios:
+
+For patients with ≥2 clinical attacks:
+- If there are ≥2 lesions with objective clinical evidence, no additional data is needed
+- If there is 1 lesion with a suggestive clinical history of a previous lesion, no additional data is needed
+- If there is 1 lesion without a suggestive history, dissemination in space on MRI is required
+
+For patients with 1 clinical attack (clinically isolated syndrome):
+- With ≥2 lesions, dissemination in time on MRI or CSF-specific oligoclonal bands are needed
+- With 1 lesion, both dissemination in space and time on MRI (or CSF oligoclonal bands) are required
+
+Dissemination in space requires lesions in at least two of four locations: periventricular, cortical/juxtacortical, infratentorial, or spinal cord.
+
+Dissemination in time can be established by:
+- A new lesion compared to a previous scan
+- Simultaneous presence of a gadolinium-enhancing and non-enhancing T2 lesion
+
+The criteria were first introduced in 2001 by Ian McDonald and have been revised multiple times, most recently in 2017.","2024-11-06 12:55:07"
+11,"mcdonald criteria","The McDonald criteria are diagnostic guidelines for multiple sclerosis that assess clinical, radiographic, and laboratory evidence. They were originally introduced in 2001 by neurologist Ian McDonald and have been revised multiple times, most recently in 2017.
+
+The criteria provide different diagnostic approaches based on the number of clinical attacks:
+
+1. For patients with ≥2 clinical attacks:
+- If there are ≥2 lesions with objective clinical evidence, no additional data is needed
+- With 1 lesion and clinical history of a previous lesion, no additional data is needed
+- With 1 lesion and no previous history, dissemination in space on MRI is required
+
+2. For patients with 1 clinical attack (clinically isolated syndrome):
+- With ≥2 lesions, dissemination in time or CSF oligoclonal bands are needed
+- With 1 lesion, dissemination in space on MRI and either dissemination in time or CSF oligoclonal bands are required
+
+Dissemination in space requires lesions in at least two of four locations: periventricular, cortical/juxtacortical, infratentorial, or spinal cord.
+
+A 2024 update is pending, which proposes additional changes like including optic nerve involvement and new imaging markers.","2024-11-06 12:57:34"
+12,"tell me something about adem. what are the triggers and how does it look on MRI?","ADEM is an acute inflammatory condition affecting the brain's white matter, typically occurring in children and adolescents following a recent viral infection or vaccination. The triggers are most commonly:
+
+1. Viral infections (within 1-2 weeks prior)
+2. Vaccinations (though less than 5% of cases follow immunization)
+
+On MRI, ADEM presents with the following characteristics:
+
+T2 imaging:
+- Regions of high signal
+- Surrounding edema
+- Typically situated in subcortical locations
+- Can involve thalami and brainstem
+
+T1 Contrast (Gd):
+- Punctate, ring, or arc enhancement
+- Often shows an ""open ring sign"" along the leading edge of inflammation
+
+Diffusion-weighted imaging (DWI):
+- Can show peripherally restricted diffusion
+- Center of lesion has increased extracellular water
+- Does not show increased restriction like a cerebral abscess
+
+The lesions are usually bilateral but asymmetrical, distributed in supratentorial or infratentorial white matter. They can vary from punctate to tumefactive regions, and interestingly, the mass effect can be less than expected for their size.","2024-11-06 13:07:58"
+13,"how can I differentiate a hepatic adenoma from a focal nodulary hyperplasia in MRI? ","Based on the MRI characteristics described in the context:
+
+Focal Nodular Hyperplasia (FNH):
+- Bright arterial phase enhancement
+- Isodense/isointense to liver on portal venous phase
+- Central scar enhancement on delayed phase
+
+Hepatic Adenoma:
+- Transient homogeneous enhancement in arterial phase
+- Returns to near isodensity on portal venous and delayed phase images
+
+The key differences are the presence of a central scar in FNH (which enhances on delayed phase) and the slightly different enhancement patterns in the different MRI phases.","2024-11-06 13:19:59"
+14,"McDonald criteria","The McDonald criteria are diagnostic guidelines used to identify multiple sclerosis. They were originally developed in 2001 by neurologist Ian McDonald and have been revised multiple times, most recently in 2017 and with a preliminary update in 2024.
+
+The criteria provide specific requirements for diagnosing multiple sclerosis based on:
+- Number of clinical attacks
+- MRI lesion characteristics
+- Dissemination in space (lesions in multiple brain/spinal cord regions)
+- Dissemination in time (new lesions on follow-up scans)
+- Presence of CSF oligoclonal bands
+
+The diagnostic criteria vary depending on whether a patient has:
+- 2 or more clinical attacks
+- 1 clinical attack (clinically isolated syndrome)
+- Primary progressive multiple sclerosis
+
+The 2024 update proposes additional changes, including:
+- Adding optic nerve involvement as a diagnostic site
+- Using new imaging and CSF biomarkers
+- Allowing MS diagnosis in radiologically isolated syndrome under certain conditions
+
+These criteria help clinicians systematically evaluate and confirm multiple sclerosis diagnosis by using a combination of clinical, radiographic, and laboratory evidence.","2024-11-06 13:27:29"
+15,"how do i measure the cobb angle? ","To measure the Cobb angle:
+
+1. Identify the end vertebrae of the curve deformity - these are the vertebrae whose endplates are most tilted towards each other.
+
+2. Draw lines along the endplates of these end vertebrae. If the endplates are not clearly visible, you can draw lines along the pedicles instead.
+
+3. Measure the angle between these two lines where they intersect.
+
+4. If the lines do not intersect on the film/monitor, draw two additional lines at right angles to the original lines.
+
+Most Picture Archiving and Communication Systems (PACS) have a dedicated angle measurement tool that can help you do this without manually drawing intersecting lines.","2024-11-06 13:29:02"
+16,"how does a bronchiolitis look like on CT?","On CT, bronchiolitis typically shows:
+- Hyperinflation
+- Bilateral symmetrical peribronchial thickening
+- Lack of focal lung consolidation
+- Segmental or subsegmental atelectasis
+- Small lobular air trapping
+- Increased AP diameter of airways","2024-11-07 06:56:49"
+17,"what is the etiology of laminar cortical necrosis?","Laminar cortical necrosis occurs due to situations that impair the brain's ability to provide sufficient nutrients to its neurons. This can happen through two primary mechanisms:
+
+1. Reduced supply of nutrients:
+- Hypoxia
+- Ischemia
+- Hypoglycemia
+- Cerebral hypoperfusion (due to cardiac arrest or hypotension)
+- Watershed (border zone) distribution due to hypotension and vessel stenosis
+- Severe anemia
+- Cyanide poisoning
+
+2. Increased metabolic demand:
+- Status epilepticus (which increases brain's need for glucose and oxygen)
+
+The underlying reason is the high metabolic activity of cortical neurons compared to glial cells and white matter. Certain cortical layers (particularly the third layer) are more vulnerable to metabolic stress, with different brain regions having varying susceptibilities. The selective vulnerability may be due to higher metabolic demands and denser concentrations of excitatory amino acid receptors.","2024-11-07 07:10:58"
+18,"cortical t1 hyperintensities","Cortical T1 hyperintensities are curvilinear hyperintense signals involving the cerebral cortex on T1-weighted brain MRI images. They can be caused by several conditions, including:
+
+1. Accumulation of denatured proteins and/or lipid-laden macrophages
+2. Cortical laminar necrosis
+3. Accumulation of methemoglobin in cortical hemorrhagic infarcts
+4. Vascular thrombo-occlusive disease
+5. Cerebral venous thrombosis
+6. Intracerebral hemorrhage
+7. Herpes simplex (HSV) encephalitis
+8. Cortical contusion
+
+These hyperintensities represent various pathological processes affecting the cerebral cortex.","2024-11-07 07:13:05"
+19,"how does a neurinoma look like  on MRI? ","On MRI, intracranial schwannomas (neurinomas) typically have the following characteristics:
+
+T1 imaging:
+- Isointense to hypointense to brain tissue
+- Low signal in cystic areas (if present)
+
+T1 with contrast (Gd):
+- Prominent enhancement
+- Heterogeneous in 70% of cases
+
+T2 imaging:
+- Somewhat hyperintense to brain tissue
+- Cystic areas are hyperintense
+
+Other notable features:
+- Larger tumors may show hemosiderin staining on T2* sequences
+- Higher signal on both DWI and ADC sequences (without true restricted diffusion)
+
+MRI is considered the investigation of choice for assessing these tumors due to its high contrast resolution and ability to provide detailed anatomical information.","2024-11-07 13:00:38"
+20,"how does a spinal neurinoma look like  on MRI? ","Based on the context, on MRI, spinal schwannomas (neurinomas) typically have the following characteristics:
+
+1. Signal characteristics:
+- T1: 75% are isointense, 25% are hypointense
+- T2: More than 95% are hyperintense, often with mixed signal
+- T1 with contrast: Virtually 100% enhance
+
+2. Appearance:
+- Solid, well-defined, rounded lesions
+- Can be sausage-shaped when large, extending over several levels
+- May protrude out of the neural foramen, forming a dumbbell-shaped mass
+
+3. Additional features:
+- Often associated with hemorrhage
+- May have intrinsic vascular changes
+- Can have cyst formation and fatty degeneration
+
+An exception to these characteristics is melanotic schwannomas, which are T1 hyperintense and T2 hypointense.","2024-11-07 13:03:56"
+21,"how does  neruocysticercosis look like on MRI?","On MRI, neurocysticercosis appears as a cyst with a distinctive dot sign, which represents the parasitic cyst with an usually eccentric scolex. The appearance varies depending on the stage:
+
+1. Vesicular stage: The cyst shows CSF-like intensity with a denser or hyperintense scolex.
+
+2. Colloidal vesicular stage: There is enhancement of both the cyst wall and the scolex.
+
+The cyst with dot sign can be clearly visualized on MRI scans.","2024-11-07 15:14:34"
+22,"cystic lesion brain ","Based on the context, a porencephalic cyst is a cystic lesion in the brain that is:
+
+1. Typically lined by white matter
+2. Communicates with the ventricular system and/or subarachnoid space
+3. Caused by a localized cerebral insult, most frequently during late gestation
+
+These cysts can result from various causes including:
+- Perinatal cerebral ischemia
+- Trauma
+- Infection
+- Antenatal intraparenchymal hemorrhage
+- Familial porencephaly (related to COL4A1 gene mutations)
+
+Radiographically, these cysts appear:
+- Well-defined
+- With central attenuation equal to CSF
+- Usually without mass effect
+- Following CSF signal characteristics on MRI (low T1, high T2)
+
+Clinical manifestations vary widely, ranging from asymptomatic to profoundly impaired. Common early signs include spasticity, seizures, language impairment, and motor deficits. They are often first detected in the first year of life.
+
+Treatment is primarily supportive, with the extent of impairment related to the size and location of the cyst.","2024-11-07 15:30:12"
+23,"what are typical differential diagnosis hepatic adenoma?","I apologize, but the context does not provide specific differential diagnoses for hepatic adenoma. The context primarily discusses focal nodular hyperplasia and mentions hepatic adenoma in comparison, but does not outline the differential diagnoses for hepatic adenoma itself. To accurately answer this query, I would need additional context or information.","2024-11-08 07:08:15"
+24,"at what height is the pituitary gland enlarged?","According to the context, the pituitary gland is considered enlarged when it exceeds the upper limit of normal height, which varies by age and gender:
+- Infants and children: >6 mm
+- Males and postmenopausal women: >8 mm
+- Young menstruating females: >10 mm
+- Pregnant/lactating women: >12 mm
+
+In the radiographic features section, it specifically notes that the size can be >10 mm up to 15 mm when enlarged.","2024-11-08 08:30:56"
+25,"tell me something about fatty lesions in the cerebellopontine angle","Intracranial lipomas can occur in the cerebellopontine angle, accounting for approximately 10% of intracranial lipoma locations. In these cases, the facial nerve and vestibulocochlear nerve often course through the lipoma. These lipomas are congenital lesions and are typically asymptomatic, often discovered incidentally during brain imaging. They are not tumors, but rather result from abnormal differentiation of embryologic meninx primitiva. On imaging, they appear as fat-density masses with characteristic high signal intensity on T1 and T2 MRI sequences, and they do not enhance with contrast.","2024-11-08 08:52:34"
+26,"how does a peritoneal tuberculosis look like? ","Based on the context, tuberculous peritonitis can look like:
+
+On CT imaging:
+- Nodular or symmetrical thickening of the peritoneum and mesentery
+- Abnormal peritoneal or mesenteric enhancement
+- Ascites
+- Enlarged hypodense lymph nodes
+
+Specifically, depending on the type:
+- Wet type: exudative high attenuation ascites, which may be free or loculated
+- Dry type: caseous mesenteric lymphadenopathy and fibrous adhesions, with a thickened ""cake-like"" omentum
+- Fibrotic type: omental ""cake-like"" mass, fixed bowel loops, matted loops and mesentery with loculated ascites
+
+On Ultrasound:
+- Diffuse peritoneal thickening
+- Regular and hypoechoic enlargement of the peritoneum
+- Ascites with thin fibrinous septations
+- Omental/mesenteric thickening
+- Increased bowel wall thickness
+- Lymphadenopathy
+
+Importantly, the appearance can closely mimic peritoneal carcinomatosis, so definitive diagnosis often requires histopathological or laboratory evidence.","2024-11-08 09:46:04"
+27,"what are typical localisations of cervical paraganglioma?","Based on the context, the passage primarily discusses jugular paraganglioma, which is a type of head and neck paraganglioma located at the jugular fossa. The text mentions that jugular paragangliomas can extend into several nearby areas, specifically:
+
+1. Mastoid air-cells
+2. Middle ear
+3. Eustachian tube
+4. Infratemporal fossa
+
+The context also notes that these tumors can be locally infiltrating and may involve the jugular spine and caroticojugular spine. Additionally, the text mentions that tumors may be bilateral, and other paragangliomas like carotid body tumors may coexist.
+
+However, the context does not provide a comprehensive list of all possible cervical paraganglioma locations beyond the jugular region. For a more exhaustive list of cervical paraganglioma locations, I would need additional information.","2024-11-08 10:22:49"
+28,"what are triggers for a myelitis? ","Based on the context, potential triggers for myelitis include:
+
+1. Viral infections
+2. Neurosyphilis
+3. Autoimmune conditions
+4. Vaccinations
+5. AIDS
+6. Radiation exposure
+7. Tumors
+8. Compression of the spinal cord
+
+The context indicates that there are secondary forms of transverse myelitis with various potential causes, suggesting multiple potential triggers for myelitis.","2024-11-11 13:01:13"
+29,"what are differentials for neurocysticercosis?","Based on the context, neurocysticercosis itself is listed as one of the differentials for peripheral or ring-enhancing cerebral lesions. However, the context does not specifically detail the differentials for neurocysticercosis itself. The context only mentions that neurocysticercosis typically presents as small lesions (<1-2 cm) with thin walls, and may have calcific foci present. To provide a comprehensive list of differentials for neurocysticercosis, I would need additional context or information.","2024-11-11 13:55:59"
+30,"where is the transition zone of the trigeminal nerve? ","According to the context, the transition zone of the trigeminal nerve is 4 mm from the root entry zone.","2024-11-12 08:02:20"
+31,"how does a varicella encephalitis look like on MRI?","I don't know. The context provides information about Varicella zoster virus (VZV) encephalitis, its diagnosis, and manifestations, but does not specify the specific MRI appearance of the condition. The context only mentions that CT and MRI brain may be normal, but does not describe what VZV encephalitis looks like on MRI imaging.","2024-11-12 10:26:54"
+32,"what aspects score should I treat with a thrombectomy?","Based on the context, the analysis of the BASICS trial suggested that a posterior circulation Acute Stroke Prognosis Early CT score (pc-ASPECTS) <8 may indicate high case fatality. However, the context also notes that further evidence is needed, as CTA and CT perfusion were available in only 5% of BASICS patients. So while the <8 pc-ASPECTS score is mentioned, the recommendation is not definitively conclusive.","2024-11-12 10:33:37"
+33,"what constitutes a t4 stage lung cancer?","A T4 stage lung cancer is characterized by:
+
+1. Tumor size greater than 7 cm in greatest dimension, OR
+
+2. Associated separate tumor nodule(s) in a different ipsilateral lobe than the primary tumor, OR
+
+3. Tumor that invades any of the following structures:
+- Diaphragm
+- Mediastinum
+- Heart
+- Great vessels
+- Trachea
+- Recurrent laryngeal nerve
+- Esophagus
+- Vertebral body
+- Carina","2024-11-12 11:55:52"
+34,"what stage is a 3,1 cm big lung cancer with mediastinal lymph metastasis but no other metastases?","Based on the TNM staging system in the context, this scenario would be:
+
+T1c (tumor >2 cm but ≤3 cm in greatest dimension)
+N2 (metastasis in ipsilateral mediastinal and/or subcarinal lymph node(s))
+M0 (no distant metastasis)
+
+This combination corresponds to stage IIIa.
+
+The 5-year survival for stage IIIa is 36%.","2024-11-12 11:56:51"
+35,"tell me something about medulloblastoma and its appearance on MRI","On MRI, medulloblastomas have several characteristic features:
+
+T1 Appearance:
+- Hypointense to grey matter
+
+T1 Contrast-Enhanced:
+- Overall 90% enhance, often heterogeneously
+- WNT-activated tumors tend to vividly enhance
+- Group 4 tumors tend to enhance less
+
+T2/FLAIR Appearance:
+- Iso to hyperintense to grey matter
+- Heterogeneous due to calcification, necrosis, and cyst formation
+- Surrounding edema is common
+
+Diffusion Characteristics:
+- High DWI signal (restricted diffusion) due to hypercellularity
+- Low ADC values (lower than normal cerebellum)
+
+MR Spectroscopy:
+- Elevated choline
+- Decreased NAA
+- Elevated taurine
+
+The appearance can vary slightly depending on the molecular subgroup, with location and enhancement patterns offering clues to the specific subtype.","2024-11-13 11:43:30"
+36,"how does hiv related myelopathy look like on mri?","On MRI, HIV-related myelopathy typically shows:
+- Spinal cord atrophy, most commonly involving the thoracic cord
+- Bilateral symmetric dorsal column involvement, which looks similar to subacute combined degeneration","2024-11-14 12:18:55"
+37,"what are the different types of otosclerosis? ","Based on the context, there are two main subtypes of otosclerosis:
+
+1. Fenestral (stapedial) otosclerosis:
+- Involves the oval window and stapes footplate
+- Accounts for approximately 80% of cases
+- Hearing loss is often conductive, due to stapes thickening and fixation
+
+2. Retrofenestral (cochlear) otosclerosis:
+- Involves the cochlear area with demineralization of the cochlear capsule
+- Accounts for approximately 20% of cases
+- Hearing loss is often sensorineural
+
+The context also notes that retrofenestral otosclerosis usually occurs with fenestral involvement, so they are considered a continuum rather than completely distinct conditions.","2024-11-14 14:19:59"
+38,"how does a extraventricular neurocytoma look like on mri? ","On MRI, extraventricular neurocytomas typically appear as:
+- Well-defined lesions
+- Mixed cystic and heterogeneously solid masses
+- Involving deep white matter or cortical grey matter of the cerebral hemispheres
+- Solid portions may show varying degrees of enhancement on T1 with contrast
+- Can be complex and sometimes large
+- May or may not have associated peritumoral edema","2024-11-14 14:25:01"
+39,"what can you tell me about pulmonary endometriosis?","Pulmonary endometriosis is a rare form of thoracic endometriosis where endometrial tissue is found in the lung. It typically occurs in women during their third and fourth decades of life. Patients may experience symptoms such as:
+
+- Catamenial pleuritic chest pain
+- Catamenial hemoptysis (when endometrial tissue is in the bronchial tree)
+- Catamenial pneumothorax or hemothorax (when endometrial tissue is in the lung periphery)
+- Lung nodules
+
+The exact cause is not fully understood, but theories include:
+- In utero pleural metaplasia
+- Retrograde menstruation with transdiaphragmatic passage of endometrial tissue
+- Hematogenic migration after gynecological surgery
+
+Chest CT is the preferred imaging method, which may show:
+- Pneumothorax
+- Hemothorax
+- Nodules that change cyclically
+- Bronchial wall thickening
+- Thin-walled cavities
+- Bullous formation
+- Ground glass opacities
+
+Treatment options include medical approaches like gonadotropin-releasing hormone agonists and surgical interventions such as lung resection using VATS (Video-Assisted Thoracic Surgery).","2024-11-15 07:05:26"

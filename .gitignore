@@ -7,10 +7,10 @@ __pycache__
 .venv
 *.db*
 logs
-notebooks
 .sesskey
 .vscode/
 .ruff_cache/
 .plash
 plash.env
 .DS_Store
+.ipynb_checkpoints
