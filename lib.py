@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import apsw
 import apsw.bestpractice
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 import asyncio
 from dataclasses import dataclass
 
@@ -151,7 +151,7 @@ def extract_all_query_content(text: str) -> list[str]:
     return search_terms
 
 
-async def get_search_terms(query: str) -> list[str]:
+async def aget_search_terms(query: str) -> list[str]:
     client = AsyncOpenAI(
         base_url="https://api.together.xyz/v1",
         api_key=os.getenv("TOGETHER_API_KEY"),
@@ -220,8 +220,8 @@ def get_docs(search_results):
     return [d["title"] + " " + d["body"] for d in search_results]
 
 
-async def search_results(search_term: str, cursor):
-    soup = await search_radiopaedia(search_term, cursor)
+async def asearch_results(search_term: str, cursor):
+    soup = await asearch_radiopaedia(search_term, cursor)
 
     all_search_results = [
         structure_search_result(search_result, i)
@@ -244,7 +244,7 @@ def setup_db(db_path=":memory:"):
     return cursor
 
 
-async def get_article_text(url, cursor):
+async def aget_article_text(url, cursor):
     cache_hits = cursor.execute(
         "SELECT content FROM radiopaedia_articles WHERE url = ?", (url,)
     ).fetchall()
@@ -261,7 +261,7 @@ async def get_article_text(url, cursor):
     return content
 
 
-async def search_radiopaedia(search_query: str, cursor):
+async def asearch_radiopaedia(search_query: str, cursor):
     url = "https://radiopaedia.org/search"
     cache_hits = cursor.execute(
         "SELECT search_results FROM radiopaedia_search_results WHERE search_query = ?",
@@ -285,9 +285,9 @@ async def search_radiopaedia(search_query: str, cursor):
     return BeautifulSoup(response.content, "html.parser")
 
 
-async def process_term(term: str, c) -> tuple[list[str], list[Source]]:
+async def aprocess_term(term: str, c) -> tuple[list[str], list[Source]]:
     # Get search results for the term
-    results = await search_results(term, c)
+    results = await asearch_results(term, c)
     if not results or len(results) == 0:
         # Return empty lists to indicate no results for this term
         return [], []
@@ -299,7 +299,7 @@ async def process_term(term: str, c) -> tuple[list[str], list[Source]]:
     tasks = []
     for result in top_results:
         url = f"https://radiopaedia.org{result['href']}"
-        tasks.append(asyncio.create_task(get_article_text(url, c)))
+        tasks.append(asyncio.create_task(aget_article_text(url, c)))
 
     # Wait for all article fetches to complete concurrently
     articles = await asyncio.gather(*tasks)
@@ -314,7 +314,7 @@ async def process_term(term: str, c) -> tuple[list[str], list[Source]]:
     return [article + "\n\n" for article in articles], sources
 
 
-async def answer_query(
+async def aanswer_query(
     query: str, convo: ConversationManager, c: apsw.Cursor, search: bool = True
 ):
     """Main coroutine to search and answer questions."""
@@ -327,7 +327,7 @@ async def answer_query(
     if not search:
         convo.add_user_message(query)
         result = ""
-        async for text in ask_llm(client, model, convo):
+        async for text in aask_llm(client, model, convo):
             result += text
             yield AnswerChunkEvent(chunk=result)
             await asyncio.sleep(0.025)
@@ -335,14 +335,14 @@ async def answer_query(
         yield StopEvent()
         return
 
-    terms = await get_search_terms(query)
+    terms = await aget_search_terms(query)
 
     # Inform the client that we are starting to search for each term.
     yield SearchEvent(terms=terms)
     await asyncio.sleep(0.025)
 
     # Create and launch all tasks concurrently for each term.
-    tasks = [asyncio.create_task(process_term(term, c)) for term in terms]
+    tasks = [asyncio.create_task(aprocess_term(term, c)) for term in terms]
     # Wait for all tasks to finish concurrently.
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -366,7 +366,7 @@ async def answer_query(
     convo.add_user_message(prompt)
 
     result = ""
-    async for text in ask_llm(client, model, convo):
+    async for text in aask_llm(client, model, convo):
         result += text if isinstance(text, str) else ""
         yield AnswerChunkEvent(chunk=result)
         await asyncio.sleep(0.025)
@@ -376,7 +376,7 @@ async def answer_query(
     yield StopEvent()
 
 
-async def ask_llm(client, model, convo: ConversationManager):
+async def aask_llm(client, model, convo: ConversationManager):
     response = await client.chat.completions.create(
         model=model, messages=convo.get_messages(), temperature=0.2, stream=True
     )
@@ -385,13 +385,13 @@ async def ask_llm(client, model, convo: ConversationManager):
             yield chunk.choices[0].delta.content
 
 
-async def answer_query_csv(query: str, cursor):
+async def aanswer_query_csv(query: str, cursor):
     convo = ConversationManager()
 
     result = {}
     result["query"] = query
 
-    async for event in answer_query(query, convo, cursor):
+    async for event in aanswer_query(query, convo, cursor):
         if isinstance(event, SearchEvent):
             result["search_terms"] = event.terms
         elif isinstance(event, AnswerChunkEvent):
@@ -406,4 +406,187 @@ async def answer_query_csv(query: str, cursor):
         else:
             pass
 
+    return result
+
+
+# Synchronous versions of async functions
+
+def get_search_terms(query: str) -> list[str]:
+    client = OpenAI(
+        base_url="https://api.together.xyz/v1",
+        api_key=os.getenv("TOGETHER_API_KEY"),
+    )
+    model = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+
+    message = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": '<examples>\n<example>\n<query>\nWhat are the findings of acute pancreatitis on contrast-enhanced CT?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concept: acute pancreatitis\n2. The query does not require a comparison or multiple distinct concepts.\n3. The most appropriate technical term is "acute pancreatitis".\n4. This search term is justified because it directly addresses the main concept in the query. Although the query asks about the cause, searching for "acute pancreatitis" will likely provide information about its etiology, including the most common cause.\n</analysis>\n<search_terms>acute pancreatitis</search_terms>\n</ideal_output>\n</example>\n<example>\n<query>\nWhat is the MTA score?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concept: MTA score\n2. The query does not require a comparison or multiple distinct concepts.\n3. The most appropriate technical term is "MTA score".\n4. This search term is justified because it directly addresses the main concept in the query. While the query asks about a specific age and pathological score, searching for "MTA score" will likely provide comprehensive information about the scoring system, including age-related norms and pathological thresholds.\n</analysis>\n<search_terms>MTA score</search_terms>\n</ideal_output>\n</example>\n<example>\n<query>\nHow to differentiate radiation necrosis from tumor recurrence on MRI?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concepts: radiation necrosis, tumor recurrence\n2. The query implies a comparison between two conditions, but does not explicitly ask for both to be searched.\n3. The most appropriate technical term is "radiation necrosis".\n4. This search term is justified because it focuses on one of the main concepts in the query. While the question involves differentiating between radiation necrosis and tumor recurrence, searching for "radiation necrosis" will likely provide information on its characteristics and how to distinguish it from tumor recurrence. As per the guidelines, we provide only one search term unless explicitly asked for multiple terms.\n</analysis>\n<search_terms>radiation necrosis</search_terms>\n</ideal_output>\n</example>\n<example>\n<query>\nHow to differentiate primary CNS lymphoma from glioblastoma on MRI?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concepts: primary CNS lymphoma, glioblastoma\n2. The query explicitly asks for a comparison between two conditions.\n3. The most appropriate technical terms are "CNS lymphoma" and "glioblastoma".\n4. These search terms are justified because the query specifically asks for a comparison between these two conditions. As per the guidelines, we provide multiple search terms when the query explicitly requires a comparison.\n</analysis>\n<search_terms>CNS lymphoma\nglioblastoma</search_terms>\n</ideal_output>\n</example>\n<example>\n<query>\nHow does a TOF MRA work?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concept: TOF MRA (Time-of-Flight Magnetic Resonance Angiography)\n2. The query does not require a comparison or multiple distinct concepts.\n3. The most appropriate technical term is "TOF MRA".\n4. This search term is justified because it directly addresses the main concept in the query. While the question asks about the working principle, searching for "TOF MRA" will likely provide comprehensive information about the technique, including how it works.\n</analysis>\n<search_terms>TOF MRA</search_terms>\n</ideal_output>\n</example>\n<example>\n<query>\nWhat\'s chemical shift imaging?\n</query>\n<ideal_output>\n<analysis>\n1. Main radiological concept: chemical shift imaging\n2. The query does not require a comparison or multiple distinct concepts.\n3. The most appropriate technical term is "chemical shift imaging".\n4. This search term is justified because it directly matches the concept asked about in the query. It is a concise noun phrase that captures the specific imaging technique in question.\n</analysis>\n<search_terms>chemical shift imaging</search_terms>\n</ideal_output>\n</example>\n</examples>\n\n',
+                    },
+                    {
+                        "type": "text",
+                        "text": f"<query>{query}</query>",
+                    },
+                ],
+            },
+            {"role": "assistant", "content": [{"type": "text", "text": "<analysis>"}]},
+        ],
+        temperature=0.2,
+    )
+
+    search_terms = extract_all_query_content(message.choices[0].message.content)
+
+    logging.info(f"Searchterms for query: '{query}' are: '{search_terms}'")
+    return search_terms
+
+
+def search_results(search_term: str, cursor):
+    soup = search_radiopaedia(search_term, cursor)
+
+    all_search_results = [
+        structure_search_result(search_result, i)
+        for i, search_result in enumerate(soup.find_all(class_="search-result"))
+    ]
+
+    return all_search_results
+
+
+def get_article_text(url, cursor):
+    cache_hits = cursor.execute(
+        "SELECT content FROM radiopaedia_articles WHERE url = ?", (url,)
+    ).fetchall()
+    if cache_hits:
+        logging.info(f"Cache hit for url: '{url}'")
+        return cache_hits[0][0]
+    with httpx.Client() as client:
+        response = client.get(url, headers=http_headers)
+    soup = BeautifulSoup(response.content, "html.parser")
+    content = soup.select("#content > div.body.user-generated-content")[0].text.strip()
+    cursor.execute(
+        "INSERT INTO radiopaedia_articles (url, content) VALUES (?, ?)", (url, content)
+    )
+    return content
+
+
+def search_radiopaedia(search_query: str, cursor):
+    url = "https://radiopaedia.org/search"
+    cache_hits = cursor.execute(
+        "SELECT search_results FROM radiopaedia_search_results WHERE search_query = ?",
+        (search_query,),
+    ).fetchall()
+    if cache_hits:
+        logging.info(f"Cache hit for search query: '{search_query}'")
+        rbody = cache_hits[0][0]
+        return BeautifulSoup(rbody, "html.parser")
+
+    params = {"lang": "us", "q": search_query, "scope": "articles"}
+
+    with httpx.Client() as client:
+        response = client.get(url, params=params, headers=http_headers)
+
+    soup = BeautifulSoup(response.content, "html.parser")
+
+    if soup.find(class_="search-result"):
+        cursor.execute(
+            "INSERT INTO radiopaedia_search_results (search_query, search_results) VALUES (?, ?)",
+            (search_query, response.content),
+        )
+
+    return BeautifulSoup(response.content, "html.parser")
+
+
+def process_term(term: str, c) -> tuple[list[str], list[Source]]:
+    results = search_results(term, c)
+    if not results or len(results) == 0:
+        return [], []
+
+    top_results = results[:2] if len(results) >= 2 else results[:1]
+
+    articles = []
+    for result in top_results:
+        url = f"https://radiopaedia.org{result['href']}"
+        article = get_article_text(url, c)
+        articles.append(article + "\n\n")
+
+    sources = [
+        Source(title=result["title"], url=f"https://radiopaedia.org{result['href']}")
+        for result in top_results
+    ]
+
+    return articles, sources
+
+
+def answer_query(
+    query: str, convo: ConversationManager, c: apsw.Cursor, search: bool = True
+):
+    client = OpenAI(
+        base_url="https://api.together.xyz/v1",
+        api_key=os.getenv("TOGETHER_API_KEY"),
+    )
+    model = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+
+    if not search:
+        convo.add_user_message(query)
+        result = ""
+        for text in ask_llm(client, model, convo):
+            result += text
+        convo.add_assistant_message(result)
+        return result
+
+    terms = get_search_terms(query)
+
+    articles = ""
+    sources = []
+    for term in terms:
+        try:
+            article_texts, term_sources = process_term(term, c)
+            articles += "".join(article_texts)
+            sources.extend(term_sources)
+        except Exception as e:
+            logging.error(f"Error processing term '{term}': {e}")
+            continue
+
+    prompt = f"<context>{articles}</context>\n\n<query>{query}</query>"
+
+    convo.add_user_message(prompt)
+
+    result = ""
+    for text in ask_llm(client, model, convo):
+        result += text if isinstance(text, str) else ""
+    convo.add_assistant_message(result)
+    return result, sources
+
+
+def ask_llm(client, model, convo: ConversationManager):
+    response = client.chat.completions.create(
+        model=model, messages=convo.get_messages(), temperature=0.2, stream=True
+    )
+    for chunk in response:
+        if chunk.choices:
+            yield chunk.choices[0].delta.content
+
+
+def answer_query_csv(query: str, cursor):
+    convo = ConversationManager()
+    
+    result = {}
+    result["query"] = query
+    
+    try:
+        terms = get_search_terms(query)
+        result["search_terms"] = terms
+        
+        answer_result, sources = answer_query(query, convo, cursor)
+        result["answer"] = answer_result
+        result["urls"] = [source.url for source in sources]
+    except Exception as e:
+        logging.error(f"Error in answer_query_csv: {e}")
+        result["answer"] = "Error processing query"
+        result["urls"] = []
+    
     return result
