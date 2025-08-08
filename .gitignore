@@ -13,3 +13,4 @@ notebooks
 .ruff_cache/
 .plash
 plash.env
+.DS_Store
