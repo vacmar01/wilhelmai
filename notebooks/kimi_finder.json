@@ -1,0 +1,42 @@
+{
+  "generate_search_query.predict": {
+    "traces": [],
+    "train": [],
+    "demos": [
+      {
+        "augmented": true,
+        "user_query": "How do I differentiate between a meningioma and schwannoma on contrast-enhanced MRI?",
+        "reasoning": "The user is asking how to distinguish two intracranial neoplasms—meningioma and schwannoma—based on their appearance on contrast-enhanced MRI. The two main clinical entities (diseases) under discussion are meningioma and schwannoma. The imaging modality (contrast-enhanced MRI) is not included as a topic.",
+        "main_topics": [
+          "meningioma",
+          "schwannoma"
+        ]
+      }
+    ],
+    "signature": {
+      "instructions": "Extract one or two main topics (diseases, procedures, phenomenon etc.) from the user query. \n\nDo not include imaging modalities (CT, MRI etc.) in your topics.\n\nIf the user query is about a phenomenon (e.g., penumbra) in the context of a specific imaging modality (e.g., CT perfusion), then include the full compound phrase (\"penumbra ct perfusion\") as a single topic even if the phrase contains the modality name. Do not split it into separate words or drop the modality part; the exact compound phrase is what retrieves the correct Radiopaedia article.\n\nWhen the user query mentions a disease or condition along with an imaging modality (e.g., \"how does X look on MRI\"), extract only the disease\/condition name as the topic. Do not include the imaging modality in your topics list. For the given example, \"japanese encephalitis\" should be the sole topic extracted from \"how does japanese encephalitis look like on MRI?\".",
+      "fields": [
+        {
+          "prefix": "User Query:",
+          "description": "${user_query}"
+        },
+        {
+          "prefix": "Reasoning: Let's think step by step in order to",
+          "description": "${reasoning}"
+        },
+        {
+          "prefix": "Main Topics:",
+          "description": "${main_topics}"
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.12",
+      "dspy": "2.6.27",
+      "cloudpickle": "3.1"
+    }
+  }
+}

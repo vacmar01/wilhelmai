@@ -19,6 +19,7 @@ dependencies = [
     "pytest-asyncio>=0.25.3",
     "pytest>=8.3.5",
     "python-fasthtml>=0.12.1",
+    "scikit-learn>=1.7.1",
 ]
 
 [tool.uv.sources]

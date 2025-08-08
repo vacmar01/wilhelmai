@@ -35,7 +35,7 @@ from fh_heroicons import Heroicon
 import os
 
 from lib import (
-    answer_query,
+    aanswer_query,
     AnswerChunkEvent,
     SourcesEvent,
     SearchEvent,
@@ -45,7 +45,6 @@ from lib import (
     LogicEvent,
     Source,
     setup_db,
-    ConversationManager,
 )
 
 
@@ -104,11 +103,11 @@ def event_to_sse(event: LogicEvent):
             return "event: close\ndata: \n\n"
 
 
-async def answer_query_sse(query: str, convo: ConversationManager, search: bool = True):
+async def answer_query_sse(query: str):
     """This function consumes the events from the answer_query generator and yields SSE messages with HTML in it."""
     start_time = asyncio.get_event_loop().time()
 
-    async for event in answer_query(query, convo, c, search):
+    async for event in aanswer_query(query, c):
         yield event_to_sse(event)
         if isinstance(event, StopEvent):
             end_time = asyncio.get_event_loop().time()
@@ -217,32 +216,26 @@ def AnswerComponent(*args, **kwargs):
 
 @rt
 def index():
-    convo = ConversationManager()
-
     @rt
     def ask(query: str):
-        is_fu = len(convo.get_messages()) > 1
         response = (
             QuestionComponent(query),
             AnswerComponent(
                 hx_ext="sse",
-                sse_connect=receive_answer.to(query=query, search=not is_fu),
+                sse_connect=receive_answer.to(query=query),
                 sse_swap="message",
                 sse_close="close",
                 hx_swap="innerHTML show:bottom",
             ),
         )
 
-        if is_fu:
-            return (HttpHeader("HX-Reswap", "beforeend"),) + response
         return response
 
     @rt
     def receive_answer(
         query: str,
-        search: bool = False,
     ):
-        return EventStream(answer_query_sse(query, convo, search=search))
+        return EventStream(answer_query_sse(query))
 
     def ExampleQuestion(qtext=""):
         return Div(
