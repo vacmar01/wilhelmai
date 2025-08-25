@@ -73,7 +73,7 @@ def setup_db(db_path=":memory:"):
 MODEL = os.getenv("MODEL_NAME", "groq/moonshotai/kimi-k2-instruct")
 lm = dspy.LM(MODEL)
 dspy.configure(lm=lm)
-c = setup_db("data/cache.db")
+c = setup_db(os.getenv("DB_PATH", "data/cache.db"))
 
 class SearchQuerySig(dspy.Signature):
     """Extract one or two main topics (diseases, procedures, phenomenon etc.) from the user query.
@@ -145,6 +145,17 @@ http_headers = {
     "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
 }
 
+_http_client = None
+
+def get_http_client():
+    global _http_client
+    if _http_client is None:
+        _http_client = httpx.Client(timeout=30.0)
+    return _http_client
+
+# module level httpx client
+client = get_http_client()
+
 def structure_search_result(result, idx):
     return {
         "id": idx,
@@ -207,8 +218,7 @@ def get_article_text(url, cursor):
     if cache_hits:
         logging.info(f"Cache hit for url: '{url}'")
         return cache_hits[0][0]
-    with httpx.Client() as client:
-        response = client.get(url, headers=http_headers)
+    response = client.get(url, headers=http_headers)
     soup = BeautifulSoup(response.text, "html.parser")
     content = soup.select("#content > div.body.user-generated-content")[0].text.strip()
     cursor.execute(
@@ -230,8 +240,7 @@ def search_radiopaedia(search_query: str, cursor):
 
     params = {"lang": "us", "q": search_query, "scope": "articles"}
 
-    with httpx.Client() as client:
-        response = client.get(url, params=params, headers=http_headers)
+    response = client.get(url, params=params, headers=http_headers)
 
     soup = BeautifulSoup(response.text, "html.parser")
 
