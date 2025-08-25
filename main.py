@@ -185,10 +185,6 @@ def DocumentationComponent():
 - All medical content is provided under the [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 License](https://creativecommons.org/licenses/by-nc-sa/3.0/) from Radiopaedia.org.
 
 Each generated answer provides a direct link to the original Radiopaedia.org source content for verification and further reference.
-
-Built with Llama - [https://www.llama.com/llama4/license/](https://www.llama.com/llama4/license/)
-
-Llama 4 is licensed under the Llama 4 Community License, Copyright © Meta Platforms, Inc. All Rights Reserved.
 """),
         )
     )
