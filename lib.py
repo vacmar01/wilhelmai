@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import apsw
 import apsw.bestpractice
 import dspy
+import os
 
 from dataclasses import dataclass
 
@@ -69,7 +70,7 @@ def setup_db(db_path=":memory:"):
     )
     return cursor
 
-MODEL = "groq/moonshotai/kimi-k2-instruct"
+MODEL = os.getenv("MODEL_NAME", "groq/moonshotai/kimi-k2-instruct")
 lm = dspy.LM(MODEL)
 dspy.configure(lm=lm)
 c = setup_db("data/cache.db")
