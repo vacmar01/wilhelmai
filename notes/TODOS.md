@@ -1,3 +1,3 @@
-- Multiple chats 
+- Multiple chats
 - pull in example images :-O
-- only show unique sources (`list(set(sources))`)
+- consolidate SourcesEvent and FinalAnswerEvent

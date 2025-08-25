@@ -19,8 +19,12 @@ class Source:
 
 @dataclass
 class AnswerChunkEvent:
-    chunk: str
+    answer: str
 
+@dataclass
+class FinalAnswerEvent:
+    answer: str
+    articles: list[dict]
 
 @dataclass
 class SourcesEvent:
@@ -51,6 +55,7 @@ class StopEvent:
 
 LogicEvent = (
     AnswerChunkEvent
+    | FinalAnswerEvent
     | SearchEvent
     | FoundArticleEvent
     | ErrorEvent
@@ -71,7 +76,7 @@ def setup_db(db_path=":memory:"):
     return cursor
 
 MODEL = os.getenv("MODEL_NAME", "groq/moonshotai/kimi-k2-instruct")
-lm = dspy.LM(MODEL)
+lm = dspy.LM(MODEL, api_key=os.getenv("GROQ_API_KEY"))
 dspy.configure(lm=lm)
 c = setup_db(os.getenv("DB_PATH", "data/cache.db"))
 
@@ -90,6 +95,7 @@ class AnswerQuerySig(dspy.Signature):
 
     user_query: str = dspy.InputField()
     context: list[str] = dspy.InputField()
+    history: dspy.History = dspy.InputField()
     answer: str = dspy.OutputField(desc="concise, yet educational, markdown-styled answer to the user query.")
 
 
@@ -112,14 +118,14 @@ class RadiopaediaQA(dspy.Module):
         self.find_articles = article_finder
         self.answer_query = dspy.Predict(AnswerQuerySig)
 
-    def forward(self, user_query: str):
-        articles = self.find_articles(user_query=user_query)
-        if not articles.urls:
-            return "No results found"
+    def forward(self, user_query: str, history: dspy.History):
+        articles = history.messages[0]["articles"] if history.messages else dict(self.find_articles(user_query=user_query))
+        if not articles["urls"]:
+            return dspy.Prediction(error="No results found")
 
-        context = [get_article_text(url=url, cursor=c) for url in articles.urls]
-        answer = self.answer_query(user_query=user_query, context=context).answer
-        return dspy.Prediction(answer=answer, urls=articles.urls, context=context, main_topics=articles.main_topics)
+        context = [get_article_text(url=url, cursor=c) for url in articles["urls"]]
+        answer = self.answer_query(user_query=user_query, context=context, history=history).answer
+        return dspy.Prediction(answer=answer, context=context, articles=articles)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -165,7 +171,7 @@ def structure_search_result(result, idx):
     }
 
 async def aanswer_query(
-    query: str, c: apsw.Cursor
+    query: str, c: apsw.Cursor, history: dspy.History
 ):
     """Main coroutine to search and answer questions."""
 
@@ -174,8 +180,10 @@ async def aanswer_query(
     qa = RadiopaediaQA(find_articles)
 
 
-    def check_faithfulness(args, pred):
+    def check_faithfulness(_, pred):
         checker = dspy.ChainOfThought("context, answer -> is_faithful: bool")
+        if not pred.context:
+            return 0.0
         is_faithful = checker(context=pred.context, answer=pred.answer).is_faithful
         return 1.0 if is_faithful else 0.0
 
@@ -187,17 +195,16 @@ async def aanswer_query(
             dspy.streaming.StreamListener(signature_field_name="answer")
         ]
     )
-    # Inform the client that we are starting to search for each term.
 
-    outp_stream = stream_qa(user_query=query)
+    outp_stream = stream_qa(user_query=query, history=history)
     answer = ""
     async for c in outp_stream:
         if isinstance(c, dspy.streaming.StreamResponse):
             answer += c.chunk
-            yield AnswerChunkEvent(chunk=answer)
+            yield AnswerChunkEvent(answer=answer)
         elif isinstance(c, dspy.Prediction):
-            yield AnswerChunkEvent(chunk=c.answer)
-            yield SourcesEvent(sources=[Source(title=url, url=url) for url in list(set(c.urls))], answer=c.answer)
+            yield FinalAnswerEvent(answer=c.answer, articles=c.articles)
+            yield SourcesEvent(sources=[Source(title=url, url=url) for url in list(set(c.articles["urls"]))], answer=c.answer)
     yield StopEvent()
 
 def search_results(search_term: str, cursor):

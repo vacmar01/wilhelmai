@@ -34,8 +34,13 @@ from dotenv import load_dotenv
 from fh_heroicons import Heroicon
 import os
 import logging
+import dspy
+
+import uuid
+from typing import Dict
 
 from lib import (
+    FinalAnswerEvent,
     aanswer_query,
     AnswerChunkEvent,
     SourcesEvent,
@@ -48,7 +53,6 @@ from lib import (
     setup_db,
 )
 
-
 load_dotenv()
 
 ######## DB STUFF ########
@@ -60,12 +64,28 @@ c = setup_db(os.getenv("DB_PATH", "data/cache.db"))
 ######## Helper Functions ########
 ##################################
 
+conversations: Dict[str, dspy.History] = {}
+
+def get_or_create_conversation(conversation_id: str = None) -> tuple[str, dspy.History]:
+    """Get existing conversation or create a new one."""
+    if conversation_id and conversation_id in conversations:
+        return conversation_id, conversations[conversation_id]
+
+    # Create new conversation
+    new_id = str(uuid.uuid4())
+    conversations[new_id] = dspy.History(messages=[])
+    return new_id, conversations[new_id]
+
+def update_conversation(conversation_id: str, history: dspy.History):
+    """Update conversation in memory."""
+    conversations[conversation_id] = history
+
 
 def event_to_sse(event: LogicEvent):
     match event:
-        case AnswerChunkEvent(chunk):
+        case AnswerChunkEvent(answer) | FinalAnswerEvent(answer):
             return sse_message(
-                Div(id="content", cls="prose")(NotStr(mistletoe.markdown(chunk)))
+                Div(id="content", cls="prose")(NotStr(mistletoe.markdown(answer)))
             )
         case SourcesEvent(sources, answer):
             return sse_message(
@@ -104,12 +124,21 @@ def event_to_sse(event: LogicEvent):
             return "event: close\ndata: \n\n"
 
 
-async def answer_query_sse(query: str):
+async def answer_query_sse(query: str, conv_id: str):
     """This function consumes the events from the answer_query generator and yields SSE messages with HTML in it."""
     start_time = asyncio.get_event_loop().time()
 
-    async for event in aanswer_query(query, c):
+    _, history = get_or_create_conversation(conv_id)
+
+    async for event in aanswer_query(query, c, history):
         yield event_to_sse(event)
+        if isinstance(event, FinalAnswerEvent):
+            history.messages.append({
+                "user_query": query,
+                "answer": event.answer,
+                "articles": event.articles
+            })
+            update_conversation(conv_id, history)
         if isinstance(event, StopEvent):
             end_time = asyncio.get_event_loop().time()
             logging.info(f"answered query in {end_time - start_time:.2f} seconds")
@@ -214,16 +243,35 @@ def AnswerComponent(*args, **kwargs):
 @rt
 def index():
     @rt
-    def ask(query: str):
+    def ask(query: str, conv_id: str = None):
+
+        is_followup = bool(conv_id)
+
+        #TODO: this line is awkward. Need to fix
+        conv_id, _ = get_or_create_conversation(conv_id)
+
+
+        ac = AnswerComponent(
+            hx_ext="sse",
+            sse_connect=receive_answer.to(query=query, conv_id=conv_id),
+            sse_swap="message",
+            sse_close="close",
+            hx_swap="innerHTML show:bottom",
+        )
+
+        if is_followup:
+            response = (
+                QuestionComponent(query),
+                ac,
+                HttpHeader("Hx-Reswap", "beforeend")
+            )
+
+            return response
+
         response = (
             QuestionComponent(query),
-            AnswerComponent(
-                hx_ext="sse",
-                sse_connect=receive_answer.to(query=query),
-                sse_swap="message",
-                sse_close="close",
-                hx_swap="innerHTML show:bottom",
-            ),
+            ac,
+            SubmitForm(conv_id=conv_id, hx_swap_oob="true")
         )
 
         return response
@@ -231,13 +279,15 @@ def index():
     @rt
     def receive_answer(
         query: str,
+        conv_id: str,
     ):
-        return EventStream(answer_query_sse(query))
+        return EventStream(answer_query_sse(query, conv_id))
 
     def ExampleQuestion(qtext=""):
         return Div(
             Form(hx_post=ask.to(), hx_target="#result", hx_trigger="click")(
                 Hidden(name="query", value=qtext),
+                Hidden(name="conv_id", value=""),
                 qtext,
             ),
             cls="p-4 bg-white rounded border border-zinc-200 cursor-pointer hover:opacity-70",
@@ -250,13 +300,16 @@ def index():
         "how do I classify hemorrhagic transformation of ischemic stroke?",
     ]
 
-    def SubmitForm():
+    def SubmitForm(conv_id: str = None, **kwargs):
         return Form(
             hx_post=ask.to(),
             hx_target="#result",
             hx_swap="innerHTML",
+            id="submitform",
             cls="flex gap-2 mt-4 border-t border-t-zinc-200 pt-4",
             **{"hx-on::after-request": "this.reset()"},
+            **kwargs
+
         )(
             Input(
                 type="text",
@@ -264,6 +317,7 @@ def index():
                 placeholder="Ask here ...",
                 cls="border rounded border-zinc-200 p-2 bg-white flex-1",
             ),
+            Hidden(name="conv_id", value=conv_id if conv_id else ""),
         )
 
     return Title(description), Div(
