@@ -6,11 +6,7 @@ import apsw
 import apsw.bestpractice
 import dspy
 
-import asyncio
 from dataclasses import dataclass
-
-import os
-import re
 
 load_dotenv()
 
@@ -78,17 +74,17 @@ lm = dspy.LM(MODEL)
 dspy.configure(lm=lm)
 c = setup_db("data/cache.db")
 
-class SearchQuerySig(dspy.Signature): 
-    """Extract one or two main topics (diseases, procedures, phenomenon etc.) from the user query. 
-    
+class SearchQuerySig(dspy.Signature):
+    """Extract one or two main topics (diseases, procedures, phenomenon etc.) from the user query.
+
     Do not include imaging modalities (CT, MRI etc.) in your topics."""
 
     user_query: str = dspy.InputField()
     main_topics: list[str] = dspy.OutputField()
 
 class AnswerQuerySig(dspy.Signature):
-    """Answer the user query based on the context. 
-    
+    """Answer the user query based on the context.
+
     If the context is not relevant to the user query, say that you don't know. Do not hallucinate answers."""
 
     user_query: str = dspy.InputField()
@@ -99,7 +95,7 @@ class AnswerQuerySig(dspy.Signature):
 class RadiopaediaArticleFinder(dspy.Module):
     def __init__(self):
         self.generate_search_query = dspy.ChainOfThought(SearchQuerySig)
-        
+
     def forward(self, user_query: str):
         topics = self.generate_search_query(user_query=user_query).main_topics
 
@@ -107,19 +103,19 @@ class RadiopaediaArticleFinder(dspy.Module):
         for topic in topics:
             results = search_results(search_term=topic, cursor=c)
             urls.extend(f"https://radiopaedia.org{r['href']}" for r in results[:2])
-        
+
         return dspy.Prediction(urls=urls, main_topics=topics)
 
 class RadiopaediaQA(dspy.Module):
     def __init__(self, article_finder):
         self.find_articles = article_finder
         self.answer_query = dspy.Predict(AnswerQuerySig)
-        
+
     def forward(self, user_query: str):
         articles = self.find_articles(user_query=user_query)
         if not articles.urls:
             return "No results found"
-        
+
         context = [get_article_text(url=url, cursor=c) for url in articles.urls]
         answer = self.answer_query(user_query=user_query, context=context).answer
         return dspy.Prediction(answer=answer, urls=articles.urls, context=context, main_topics=articles.main_topics)
@@ -212,7 +208,7 @@ def get_article_text(url, cursor):
         return cache_hits[0][0]
     with httpx.Client() as client:
         response = client.get(url, headers=http_headers)
-    soup = BeautifulSoup(response.content, "html.parser")
+    soup = BeautifulSoup(response.text, "html.parser")
     content = soup.select("#content > div.body.user-generated-content")[0].text.strip()
     cursor.execute(
         "INSERT INTO radiopaedia_articles (url, content) VALUES (?, ?)", (url, content)
@@ -236,7 +232,7 @@ def search_radiopaedia(search_query: str, cursor):
     with httpx.Client() as client:
         response = client.get(url, params=params, headers=http_headers)
 
-    soup = BeautifulSoup(response.content, "html.parser")
+    soup = BeautifulSoup(response.text, "html.parser")
 
     if soup.find(class_="search-result"):
         cursor.execute(
@@ -244,4 +240,4 @@ def search_radiopaedia(search_query: str, cursor):
             (search_query, response.content),
         )
 
-    return BeautifulSoup(response.content, "html.parser")
+    return BeautifulSoup(response.text, "html.parser")

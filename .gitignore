@@ -14,3 +14,5 @@ logs
 plash.env
 .DS_Store
 .ipynb_checkpoints
+notebooks/
+*.ipynb
