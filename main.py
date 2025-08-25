@@ -33,6 +33,7 @@ import mistletoe
 from dotenv import load_dotenv
 from fh_heroicons import Heroicon
 import os
+import logging
 
 from lib import (
     aanswer_query,
@@ -93,7 +94,7 @@ def event_to_sse(event: LogicEvent):
                 )
             )
         case ErrorEvent(term, error):
-            print(f"Error processing term '{term}': {error}")
+            logging.error(f"Error processing term '{term}': {error}")
             return sse_message(
                 Div(cls="my-2 text-zinc-800")(
                     f"No results found for '{term}' or an error occurred..."
@@ -111,7 +112,7 @@ async def answer_query_sse(query: str):
         yield event_to_sse(event)
         if isinstance(event, StopEvent):
             end_time = asyncio.get_event_loop().time()
-            print(f"answered query in {end_time - start_time:.2f} seconds")
+            logging.info(f"answered query in {end_time - start_time:.2f} seconds")
             return
         if isinstance(event, ErrorEvent):
             return
