@@ -53,7 +53,7 @@ load_dotenv()
 ######## DB STUFF ########
 ##########################
 
-c = setup_db("data/cache.db")
+c = setup_db(os.getenv("DB_PATH", "data/cache.db"))
 
 
 ######## Helper Functions ########

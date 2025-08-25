@@ -159,7 +159,7 @@ async def aanswer_query(
     """Main coroutine to search and answer questions."""
 
     find_articles = RadiopaediaArticleFinder()
-    find_articles.load(path="models/kimi_finder.json")
+    find_articles.load(path=os.getenv("OPT_MODEL_PATH")) if os.getenv("OPT_MODEL_PATH") else None
     qa = RadiopaediaQA(find_articles)
 
 
