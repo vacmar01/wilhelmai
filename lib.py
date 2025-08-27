@@ -44,9 +44,7 @@ class FoundArticleEvent:
 
 @dataclass
 class ErrorEvent:
-    term: str
-    error: str
-
+    message: str
 
 @dataclass
 class StopEvent:
@@ -171,7 +169,7 @@ def structure_search_result(result, idx):
     }
 
 async def aanswer_query(
-    query: str, c: apsw.Cursor, history: dspy.History
+    query: str, history: dspy.History
 ):
     """Main coroutine to search and answer questions."""
 
@@ -198,14 +196,19 @@ async def aanswer_query(
 
     outp_stream = stream_qa(user_query=query, history=history)
     answer = ""
-    async for c in outp_stream:
-        if isinstance(c, dspy.streaming.StreamResponse):
-            answer += c.chunk
-            yield AnswerChunkEvent(answer=answer)
-        elif isinstance(c, dspy.Prediction):
-            yield FinalAnswerEvent(answer=c.answer, articles=c.articles)
-            yield SourcesEvent(sources=[Source(title=url, url=url) for url in list(set(c.articles["urls"]))], answer=c.answer)
-    yield StopEvent()
+    try:
+        async for chunk in outp_stream:
+            if isinstance(chunk, dspy.streaming.StreamResponse):
+                answer += chunk.chunk
+                yield AnswerChunkEvent(answer=answer)
+            elif isinstance(chunk, dspy.Prediction):
+                yield FinalAnswerEvent(answer=chunk.answer, articles=chunk.articles)
+                yield SourcesEvent(sources=[Source(title=url, url=url) for url in list(set(chunk.articles["urls"]))], answer=chunk.answer)
+        yield StopEvent()
+    except Exception as e:
+        logging.error(f"Error occurred: {e}")
+        yield ErrorEvent(message="Something went wrong. Please try again.")
+        yield StopEvent()
 
 def search_results(search_term: str, cursor):
     soup = search_radiopaedia(search_term, cursor)

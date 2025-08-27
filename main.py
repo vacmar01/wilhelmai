@@ -113,11 +113,10 @@ def event_to_sse(event: LogicEvent):
                     f"Found best match for '{term}'"
                 )
             )
-        case ErrorEvent(term, error):
-            logging.error(f"Error processing term '{term}': {error}")
+        case ErrorEvent(message):
             return sse_message(
                 Div(cls="my-2 text-zinc-800")(
-                    f"No results found for '{term}' or an error occurred..."
+                    message
                 )
             )
         case StopEvent():
@@ -130,7 +129,7 @@ async def answer_query_sse(query: str, conv_id: str):
 
     _, history = get_or_create_conversation(conv_id)
 
-    async for event in aanswer_query(query, c, history):
+    async for event in aanswer_query(query, history):
         yield event_to_sse(event)
         if isinstance(event, FinalAnswerEvent):
             history.messages.append({
@@ -143,9 +142,6 @@ async def answer_query_sse(query: str, conv_id: str):
             end_time = asyncio.get_event_loop().time()
             logging.info(f"answered query in {end_time - start_time:.2f} seconds")
             return
-        if isinstance(event, ErrorEvent):
-            return
-
 
 ######## FastHTML App Init ########
 ###################################
@@ -244,6 +240,10 @@ def AnswerComponent(*args, **kwargs):
 def index():
     @rt
     def ask(query: str, conv_id: str = None):
+        if not query or not query.strip():
+            return Div(cls="m-4 text-zinc-800")(
+                "The query cannot be empty."
+            )
 
         is_followup = bool(conv_id)
 
@@ -315,6 +315,7 @@ def index():
                 type="text",
                 name="query",
                 placeholder="Ask here ...",
+                required=True,
                 cls="border rounded border-zinc-200 p-2 bg-white flex-1",
             ),
             Hidden(name="conv_id", value=conv_id if conv_id else ""),
