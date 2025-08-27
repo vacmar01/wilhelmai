@@ -35,6 +35,7 @@ from fh_heroicons import Heroicon
 import os
 import logging
 import dspy
+import mlflow
 
 import uuid
 from typing import Dict
@@ -60,6 +61,11 @@ load_dotenv()
 
 c = setup_db(os.getenv("DB_PATH", "data/cache.db"))
 
+######## MLFlow Setup ########
+##################################
+mlflow.set_tracking_uri(os.getenv('MLFLOW_TRACKING_URI', 'http://127.0.0.1:5000'))
+mlflow.set_experiment(os.getenv("MLFLOW_EXPERIMENT", "wilhelmai-dev"))
+mlflow.dspy.autolog()
 
 ######## Helper Functions ########
 ##################################
