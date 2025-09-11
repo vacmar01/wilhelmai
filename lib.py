@@ -73,7 +73,7 @@ def setup_db(db_path=":memory:"):
     )
     return cursor
 
-MODEL = os.getenv("MODEL_NAME", "groq/moonshotai/kimi-k2-instruct")
+MODEL = os.getenv("MODEL_NAME", "groq/moonshotai/kimi-k2-instruct-0905")
 lm = dspy.LM(MODEL, api_key=os.getenv("GROQ_API_KEY"))
 dspy.configure(lm=lm)
 c = setup_db(os.getenv("DB_PATH", "data/cache.db"))
