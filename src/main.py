@@ -50,8 +50,14 @@ from lib import (
     ErrorEvent,
     StopEvent,
     LogicEvent,
-    Source,
     setup_db,
+)
+
+from components import (
+    SourceComponent,
+    QuestionComponent,
+    DocumentationComponent,
+    AnswerComponent,
 )
 
 load_dotenv()
@@ -63,7 +69,7 @@ c = setup_db(os.getenv("DB_PATH", "data/cache.db"))
 
 ######## MLFlow Setup ########
 ##################################
-mlflow.set_tracking_uri(os.getenv('MLFLOW_TRACKING_URI', 'http://127.0.0.1:5000'))
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5000"))
 mlflow.set_experiment(os.getenv("MLFLOW_EXPERIMENT", "wilhelmai-dev"))
 mlflow.dspy.autolog()
 
@@ -71,6 +77,7 @@ mlflow.dspy.autolog()
 ##################################
 
 conversations: Dict[str, dspy.History] = {}
+
 
 def get_or_create_conversation(conversation_id: str = None) -> tuple[str, dspy.History]:
     """Get existing conversation or create a new one."""
@@ -81,6 +88,7 @@ def get_or_create_conversation(conversation_id: str = None) -> tuple[str, dspy.H
     new_id = str(uuid.uuid4())
     conversations[new_id] = dspy.History(messages=[])
     return new_id, conversations[new_id]
+
 
 def update_conversation(conversation_id: str, history: dspy.History):
     """Update conversation in memory."""
@@ -120,11 +128,7 @@ def event_to_sse(event: LogicEvent):
                 )
             )
         case ErrorEvent(message):
-            return sse_message(
-                Div(cls="my-2 text-zinc-800")(
-                    message
-                )
-            )
+            return sse_message(Div(cls="my-2 text-zinc-800")(message))
         case StopEvent():
             return "event: close\ndata: \n\n"
 
@@ -138,16 +142,19 @@ async def answer_query_sse(query: str, conv_id: str):
     async for event in aanswer_query(query, history):
         yield event_to_sse(event)
         if isinstance(event, FinalAnswerEvent):
-            history.messages.append({
-                "user_query": query,
-                "answer": event.answer,
-                "articles": event.articles
-            })
+            history.messages.append(
+                {
+                    "user_query": query,
+                    "answer": event.answer,
+                    "articles": event.articles,
+                }
+            )
             update_conversation(conv_id, history)
         if isinstance(event, StopEvent):
             end_time = asyncio.get_event_loop().time()
             logging.info(f"answered query in {end_time - start_time:.2f} seconds")
             return
+
 
 ######## FastHTML App Init ########
 ###################################
@@ -185,58 +192,6 @@ app, rt = fast_app(
     bodykw={"style": bg_style + "font-family: 'Geist', sans-serif;"},
 )
 
-######## Components ########
-############################
-
-
-def SourceComponent(source: Source):
-    return A(
-        source.title,
-        href=source.url,
-        target="_blank",
-        cls="rounded inline-block p-1 text-zinc-800 bg-zinc-100 font-semibold border border-zinc-200 hover:opacity-70",
-    )
-
-
-def QuestionComponent(qtext=""):
-    return Div(
-        qtext,
-        cls="p-4 rounded text-lg font-semibold",
-    )
-
-
-def DocumentationComponent():
-    return Div(cls="text-sm text-zinc-500 prose prose-zinc p-4 ")(
-        NotStr(
-            mistletoe.markdown("""This web app demonstrates the use of a large language model (LLM) combined with radiological information sourced from [Radiopaedia.org](https://radiopaedia.org) to answer radiology-related questions.
-
-**Important disclaimer:**
-
-- This tool is **not intended for clinical use** and should only be used for **demonstration, research, and educational purposes**.
-- **Do NOT enter any patient data or any other sensitive information** into this application.
-- All medical content is provided under the [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 License](https://creativecommons.org/licenses/by-nc-sa/3.0/) from Radiopaedia.org.
-
-Each generated answer provides a direct link to the original Radiopaedia.org source content for verification and further reference.
-"""),
-        )
-    )
-
-
-def AnswerComponent(*args, **kwargs):
-    return Div(cls="bg-white border border-zinc-200 p-4 rounded")(
-        Div("Answer", cls="text-zinc-400 text-sm mb-2"),
-        Div(id="loading")(
-            Script(
-                "document.body.addEventListener('htmx:sseBeforeMessage', e => {me('#loading').remove()})"
-            ),
-            Div(cls="my-2 text-zinc-400 animate-pulse")("Thinking..."),
-        ),
-        Div(cls="text-zinc-800")(
-            *args,
-            **kwargs,
-        ),
-    )
-
 
 ######## Routes ########
 ########################
@@ -247,15 +202,12 @@ def index():
     @rt
     def ask(query: str, conv_id: str = None):
         if not query or not query.strip():
-            return Div(cls="m-4 text-zinc-800")(
-                "The query cannot be empty."
-            )
+            return Div(cls="m-4 text-zinc-800")("The query cannot be empty.")
 
         is_followup = bool(conv_id)
 
-        #TODO: this line is awkward. Need to fix
+        # TODO: this line is awkward. Need to fix
         conv_id, _ = get_or_create_conversation(conv_id)
-
 
         ac = AnswerComponent(
             hx_ext="sse",
@@ -269,7 +221,7 @@ def index():
             response = (
                 QuestionComponent(query),
                 ac,
-                HttpHeader("Hx-Reswap", "beforeend")
+                HttpHeader("Hx-Reswap", "beforeend"),
             )
 
             return response
@@ -277,7 +229,7 @@ def index():
         response = (
             QuestionComponent(query),
             ac,
-            SubmitForm(conv_id=conv_id, hx_swap_oob="true")
+            SubmitForm(conv_id=conv_id, hx_swap_oob="true"),
         )
 
         return response
@@ -314,8 +266,7 @@ def index():
             id="submitform",
             cls="flex gap-2 mt-4 border-t border-t-zinc-200 pt-4",
             **{"hx-on::after-request": "this.reset()"},
-            **kwargs
-
+            **kwargs,
         )(
             Input(
                 type="text",
