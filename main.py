@@ -105,8 +105,8 @@ app, rt = fast_app(
 ########################
 
 
-@rt
-def index():
+@rt("/app")
+def get():
     @rt
     def ask(query: str, conv_id: str = None):
         if not query or not query.strip():
@@ -199,7 +199,7 @@ def index():
                 cls="hover:opacity-70",
             ),
             A(
-                href="/",
+                href="/app",
                 cls="flex gap-2 border border-zinc-200 bg-zinc-100 text-zinc-800 p-2 rounded font-semibold hover:opacity-70",
             )(Heroicon("plus", cls="w-6 h-6"), "New Chat"),
         ),
@@ -259,18 +259,13 @@ def index():
     )
 
 
-@rt("/landing")
-def get():
+@rt
+def index():
     return (
         Title(description),
         Div(style=bg_style)(
-            Navbar(),
-            Hero(),
-            Features(),
-            ExampleQuestions(),
-            CTA(),
-            Footer()
-        )
+            Navbar(), Hero(), Features(), ExampleQuestions(), CTA(), Footer()
+        ),
     )
 
 
