@@ -1,6 +1,6 @@
 from .lib import Source
 
-from fasthtml.common import A, Div, NotStr, Script, Span, Br, Button, H1, Img, P
+from fasthtml.common import A, Div, NotStr, Script, Span, Br, Button, H1, Img, P, H2
 from fh_heroicons import Heroicon
 
 import mistletoe
@@ -119,4 +119,126 @@ def Hero():
                 ),
             ),
         ),
+    )
+
+
+def Features():
+    def FeatureCard(icon, title, description):
+        return Div(cls="text-center p-6")(
+            Div(cls="mx-auto w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4")(
+                Heroicon(icon, cls="w-6 h-6 text-green-600")
+            ),
+            H1(cls="text-lg font-semibold text-zinc-900 mb-2")(title),
+            P(cls="text-gray-600")(description)
+        )
+
+    return Div(cls="py-16 bg-gray-50")(
+        Div(cls="max-w-7xl mx-auto p-4")(
+            Div(cls="text-center mb-16")(
+                H1(cls="text-3xl font-bold text-zinc-900 mb-4")(
+                    "Trusted Radiology Knowledge"
+                ),
+                P(cls="text-xl text-gray-600 max-w-2xl mx-auto")(
+                    "Powered by Radiopaedia.org's comprehensive database of radiology cases and expert insights."
+                )
+            ),
+            Div(cls="grid md:grid-cols-3 gap-8")(
+                FeatureCard(
+                    "magnifying-glass",
+                    "Instant Answers",
+                    "Get immediate responses to your radiology questions with citations from authoritative sources."
+                ),
+                FeatureCard(
+                    "academic-cap",
+                    "Educational Focus",
+                    "Learn from detailed explanations and explore related cases to deepen your understanding."
+                ),
+                FeatureCard(
+                    "shield-check",
+                    "Trusted Sources",
+                    "All content sourced from Radiopaedia.org, ensuring reliable and peer-reviewed information."
+                )
+            )
+        )
+    )
+
+
+def ExampleQuestions():
+    def QuestionExample(question):
+        return A(
+            href="/",
+            cls="block p-4 border border-gray-200 rounded-lg hover:border-green-300 transition-colors cursor-pointer"
+        )(
+            P(cls="text-gray-700 mb-2")(f'"{question}"'),
+            Div(cls="flex items-center text-sm text-green-600")(
+                Heroicon("arrow-right", cls="w-4 h-4 mr-1"),
+                "Try this question"
+            )
+        )
+
+    return Div(cls="py-16 bg-white")(
+        Div(cls="max-w-7xl mx-auto p-4")(
+            Div(cls="text-center mb-12")(
+                H1(cls="text-3xl font-bold text-zinc-900 mb-4")(
+                    "Popular Questions"
+                ),
+                P(cls="text-xl text-gray-600")(
+                    "See what radiologists and students are asking"
+                )
+            ),
+            Div(cls="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto")(
+                QuestionExample("How do I differentiate between type 1 and type 2 endoleaks on CTA?"),
+                QuestionExample("What critical shoulder angle is normal?"),
+                QuestionExample("How can I differentiate hepatic adenoma from FNH?"),
+                QuestionExample("How do I classify hemorrhagic transformation of ischemic stroke?")
+            ),
+            Div(cls="text-center mt-8")(
+                A(href="/")(
+                    Button(cls="px-6 py-2 text-green-600 border border-green-600 rounded-md hover:bg-green-50 transition-colors")(
+                        "Try it now"
+                    )
+                )
+            )
+        )
+    )
+
+
+def CTA():
+    return Div(cls="py-16 bg-green-600")(
+        Div(cls="max-w-4xl mx-auto p-4 text-center")(
+            H1(cls="text-3xl font-bold text-white mb-4")(
+                "Ready to enhance your radiology knowledge?"
+            ),
+            P(cls="text-xl text-green-100 mb-8")(
+                "Join radiologists and students who trust Wilhelm.ai for reliable answers."
+            ),
+            Div(cls="flex justify-center")(
+                A(href="/")(
+                    Button(cls="px-6 py-3 bg-white text-green-600 rounded-md font-medium hover:bg-gray-50 transition-colors")(
+                        "Get Started Free"
+                    )
+                )
+            )
+        )
+    )
+
+
+def Footer():
+    return Div(cls="bg-white border-t border-gray-200")(
+        Div(cls="max-w-7xl mx-auto p-4 py-8")(
+            Div(cls="flex flex-col md:flex-row justify-between items-center")(
+                Div(cls="flex items-center mb-4 md:mb-0")(
+                    Heroicon("cube-transparent", cls="text-green-500 w-6 h-6 mr-2"),
+                    H1(cls="text-lg font-bold")(
+                        "wilhelm",
+                        Span(".ai", cls="text-green-500"),
+                    ),
+                ),
+                P(cls="text-sm text-gray-500 text-center md:text-right")(
+                    "Educational tool powered by Radiopaedia.org content. ",
+                    Br(),
+                    "Not intended for clinical use."
+                )
+            )
+        )
     )

@@ -38,6 +38,10 @@ from src.components import (
     AnswerComponent,
     Hero,
     Navbar,
+    Features,
+    ExampleQuestions,
+    CTA,
+    Footer,
     bg_style,
 )
 
@@ -257,7 +261,17 @@ def index():
 
 @rt("/landing")
 def get():
-    return Title(description), Navbar(), Hero()
+    return (
+        Title(description),
+        Div(style=bg_style)(
+            Navbar(),
+            Hero(),
+            Features(),
+            ExampleQuestions(),
+            CTA(),
+            Footer()
+        )
+    )
 
 
 serve()
