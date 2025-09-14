@@ -1,4 +1,4 @@
-from lib import Source
+from .lib import Source
 
 from fasthtml.common import (
     A,

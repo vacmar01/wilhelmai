@@ -30,15 +30,15 @@ from fh_heroicons import Heroicon
 import os
 import mlflow
 
-from lib import setup_db, ConversationManager
+from src.lib import setup_db, ConversationManager
 
-from components import (
+from src.components import (
     QuestionComponent,
     DocumentationComponent,
     AnswerComponent,
 )
 
-from utils import (
+from src.utils import (
     answer_query_sse,
 )
 

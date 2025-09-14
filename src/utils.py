@@ -2,7 +2,7 @@ import asyncio
 import mistletoe
 import logging
 
-from lib import (
+from .lib import (
     LogicEvent,
     SearchEvent,
     FoundArticleEvent,
@@ -15,7 +15,7 @@ from lib import (
     ConversationManager,
 )
 
-from components import SourceComponent
+from .components import SourceComponent
 
 from fasthtml.common import Div, Span, NotStr, sse_message
 
