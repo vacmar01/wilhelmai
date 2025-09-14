@@ -16,8 +16,6 @@ from fasthtml.common import (
     Button,
     Hidden,
     Title,
-    sse_message,
-    NotStr,
     Img,
     Span,
     A,
@@ -27,37 +25,21 @@ from fasthtml.common import (
     HttpHeader,
 )
 
-
-import asyncio
-import mistletoe
 from dotenv import load_dotenv
 from fh_heroicons import Heroicon
 import os
-import logging
-import dspy
 import mlflow
 
-import uuid
-from typing import Dict
-
-from lib import (
-    FinalAnswerEvent,
-    aanswer_query,
-    AnswerChunkEvent,
-    SourcesEvent,
-    SearchEvent,
-    FoundArticleEvent,
-    ErrorEvent,
-    StopEvent,
-    LogicEvent,
-    setup_db,
-)
+from lib import setup_db, ConversationManager
 
 from components import (
-    SourceComponent,
     QuestionComponent,
     DocumentationComponent,
     AnswerComponent,
+)
+
+from utils import (
+    answer_query_sse,
 )
 
 load_dotenv()
@@ -67,93 +49,15 @@ load_dotenv()
 
 c = setup_db(os.getenv("DB_PATH", "data/cache.db"))
 
+######## Conversation Manager ########
+######################################
+conversation_manager = ConversationManager()
+
 ######## MLFlow Setup ########
 ##################################
 mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5000"))
 mlflow.set_experiment(os.getenv("MLFLOW_EXPERIMENT", "wilhelmai-dev"))
 mlflow.dspy.autolog()
-
-######## Helper Functions ########
-##################################
-
-conversations: Dict[str, dspy.History] = {}
-
-
-def get_or_create_conversation(conversation_id: str = None) -> tuple[str, dspy.History]:
-    """Get existing conversation or create a new one."""
-    if conversation_id and conversation_id in conversations:
-        return conversation_id, conversations[conversation_id]
-
-    # Create new conversation
-    new_id = str(uuid.uuid4())
-    conversations[new_id] = dspy.History(messages=[])
-    return new_id, conversations[new_id]
-
-
-def update_conversation(conversation_id: str, history: dspy.History):
-    """Update conversation in memory."""
-    conversations[conversation_id] = history
-
-
-def event_to_sse(event: LogicEvent):
-    match event:
-        case AnswerChunkEvent(answer) | FinalAnswerEvent(answer):
-            return sse_message(
-                Div(id="content", cls="prose")(NotStr(mistletoe.markdown(answer)))
-            )
-        case SourcesEvent(sources, answer):
-            return sse_message(
-                (
-                    Div(id="content", cls="prose")(NotStr(mistletoe.markdown(answer))),
-                    Div(cls="mt-4 text-xs text-zinc-400")(
-                        Div(
-                            Span("Sources", cls="block mb-1"),
-                            Div(cls="flex flex-wrap gap-2")(
-                                *[SourceComponent(source) for source in sources],
-                            ),
-                        )
-                    ),
-                )
-            )
-        case SearchEvent(terms):
-            return sse_message(
-                Div(cls="my-2 text-zinc-400 animate-pulse")(
-                    f"Searching for '{', '.join(terms)}'..."
-                )
-            )
-        case FoundArticleEvent(term):
-            return sse_message(
-                Div(cls="my-2 text-zinc-400 animate-pulse")(
-                    f"Found best match for '{term}'"
-                )
-            )
-        case ErrorEvent(message):
-            return sse_message(Div(cls="my-2 text-zinc-800")(message))
-        case StopEvent():
-            return "event: close\ndata: \n\n"
-
-
-async def answer_query_sse(query: str, conv_id: str):
-    """This function consumes the events from the answer_query generator and yields SSE messages with HTML in it."""
-    start_time = asyncio.get_event_loop().time()
-
-    _, history = get_or_create_conversation(conv_id)
-
-    async for event in aanswer_query(query, history):
-        yield event_to_sse(event)
-        if isinstance(event, FinalAnswerEvent):
-            history.messages.append(
-                {
-                    "user_query": query,
-                    "answer": event.answer,
-                    "articles": event.articles,
-                }
-            )
-            update_conversation(conv_id, history)
-        if isinstance(event, StopEvent):
-            end_time = asyncio.get_event_loop().time()
-            logging.info(f"answered query in {end_time - start_time:.2f} seconds")
-            return
 
 
 ######## FastHTML App Init ########
@@ -206,8 +110,7 @@ def index():
 
         is_followup = bool(conv_id)
 
-        # TODO: this line is awkward. Need to fix
-        conv_id, _ = get_or_create_conversation(conv_id)
+        conv_id, _ = conversation_manager.get_or_create_conversation(conv_id)
 
         ac = AnswerComponent(
             hx_ext="sse",
@@ -239,7 +142,7 @@ def index():
         query: str,
         conv_id: str,
     ):
-        return EventStream(answer_query_sse(query, conv_id))
+        return EventStream(answer_query_sse(query, conv_id, conversation_manager))
 
     def ExampleQuestion(qtext=""):
         return Div(

@@ -6,6 +6,8 @@ import apsw
 import apsw.bestpractice
 import dspy
 import os
+import uuid
+from typing import Dict, Tuple
 
 from dataclasses import dataclass
 
@@ -60,6 +62,41 @@ LogicEvent = (
     | SourcesEvent
     | StopEvent
 )
+
+
+class ConversationManager:
+    def __init__(self):
+        self._conversations: Dict[str, dspy.History] = {}
+
+    def get_or_create_conversation(self, conversation_id: str = None) -> Tuple[str, dspy.History]:
+        """Get existing conversation or create a new one."""
+        if conversation_id and conversation_id in self._conversations:
+            return conversation_id, self._conversations[conversation_id]
+
+        # Create new conversation
+        new_id = str(uuid.uuid4())
+        self._conversations[new_id] = dspy.History(messages=[])
+        return new_id, self._conversations[new_id]
+
+    def update_conversation(self, conversation_id: str, history: dspy.History):
+        """Update conversation in memory."""
+        self._conversations[conversation_id] = history
+
+    def get_conversation(self, conversation_id: str) -> dspy.History:
+        """Get conversation by ID, raises KeyError if not found."""
+        return self._conversations[conversation_id]
+
+    def delete_conversation(self, conversation_id: str) -> bool:
+        """Delete conversation by ID. Returns True if deleted, False if not found."""
+        return self._conversations.pop(conversation_id, None) is not None
+
+    def list_conversations(self) -> Dict[str, dspy.History]:
+        """Get all conversations (for debugging/admin purposes)."""
+        return self._conversations.copy()
+
+    def clear_all(self):
+        """Clear all conversations."""
+        self._conversations.clear()
 
 def setup_db(db_path=":memory:"):
     apsw.bestpractice.apply(apsw.bestpractice.recommended)
